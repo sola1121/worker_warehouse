@@ -41,8 +41,13 @@ def account_change_password(request):
         new_pass1 = request.POST.get("newPassword1", None)
         new_pass2 = request.POST.get("newPassword2", None)
         if not all([old_pass, new_pass1, new_pass2]):
-            return
+            return render(request, "app_account/change_password.html", {"error_msg": "输入为空"})
         user = request.user
-        
-
-        user.set_password()
+        if not user.check_password(old_pass):
+            return render(request, "app_account/change_password.html", {"error_msg": "旧密码不匹配"})
+        if new_pass1 != new_pass2:
+            return render(request, "app_account/change_password.html", {"error_msg": "新密码不一致"})
+        user.set_password(new_pass1)
+        user.save()
+        account_logout(request)
+    return render(request, "app_account/change_password.html")

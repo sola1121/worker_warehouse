@@ -21,21 +21,11 @@
             </ul>
         </div>
 
+        {# 这里用来写入主要内容 #}
         {% block content %}{% endblock %}
 
         <!-- Page Footer-->
-        <footer class="main-footer">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-sm-6">
-                        <p>Copyright &copy; 民易达内部仓储管理系统  All rights reserved.</p>
-                    </div>
-                    <div class="col-sm-6 text-right">
-                        <!-- 开发者: 王健吉, QQ:1148471941 -->
-                    </div>
-                </div>
-            </div>
-        </footer>
+        {% include "basements/footer.html" %}
     </div>
 </div>
 

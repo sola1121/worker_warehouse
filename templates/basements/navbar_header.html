@@ -6,7 +6,7 @@
                 <!-- Navbar Header-->
                 <div class="navbar-header">
                     <!-- Navbar Brand -->
-                    <a href="index.html" class="navbar-brand d-none d-sm-inline-block">
+                    <a href="{% url 'index:index_home' %}" class="navbar-brand d-none d-sm-inline-block">
                         <div class="brand-text d-none d-lg-inline-block"><span>民易达
                             </span><strong> 仓储管理</strong></div>
                         <div class="brand-text d-none d-sm-inline-block d-lg-none"><strong>WW</strong></div>
@@ -18,11 +18,29 @@
                 <ul class="nav-menu list-unstyled d-flex flex-md-row align-items-md-center">
                     <!-- User Name -->
                     <div class="nav-item">
-                        Welcome
-                        {% if request.user.is_superuser %}
-                            Superuser 
-                        {% endif %}
-                        - {{ request.user.username }}
+                        <div class="dropdown">
+                            Welcome
+                            {% if request.user.is_superuser %}
+                            Superuser
+                            {% endif %}
+                            &nbsp;-&nbsp;
+                            <button class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                {{ request.user.username }}
+                            </button>
+                            <div class="dropdown-menu pt-1 pb-1" aria-labelledby="dropdownMenuLink">
+                                {% if request.user.full_name %}
+                                <li class="dropdown-item"><i class="fa fa-user bg-green"></i> {{ request.user.full_name }}</li>
+                                {% endif %}                                
+                                {% if request.user.email %}
+                                <li class="dropdown-item"><i class="fa fa-envelope-o bg-blue"></i> {{ request.user.email }}</li>
+                                {% endif %}                                
+                                {% if request.user.phone %}
+                                <li class="dropdown-item"><i class="fa fa-mobile bg-orange"></i> {{ request.user.phone }}</li>
+                                {% endif %}
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item active" href="{% url 'account:account_change' %}">更换密码</a>
+                            </div>
+                        </div>
                     </div>
                     <!-- Notifications-->
                     <li class="nav-item dropdown"> <a id="notifications" rel="nofollow" data-target="#" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link">
@@ -60,7 +78,7 @@
                                     <strong>view all notifications </strong></a></li>
                         </ul>
                     </li>
-                    <!-- Logout    -->
+                    <!-- Logout -->
                     <li class="nav-item">
                         <a href="{% url 'account:account_logout' %}" class="nav-link logout"> 
                         <span class="d-none d-sm-inline">Logout</span><i class="fa fa-sign-out"></i>
