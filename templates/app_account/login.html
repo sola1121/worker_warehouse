@@ -1,0 +1,39 @@
+{% extends "basements/base.html" %}
+
+{% block head_title %}用户登录{% endblock %}
+
+{% block body %}
+<div class="page login-page">
+    <div class="container d-flex align-items-center">
+        <div class="form-holder has-shadow">
+            <div class="row">
+                <!-- Logo & Information Panel-->
+                <div class="col-lg-6">
+                    <div class="info d-flex align-items-center">
+                        <div class="content">
+                            <div class="logo">
+                                <h1>仓库管理后端</h1>
+                            </div>
+                            <p>提供方便, 快捷的仓库管理方式, 加速您的工作.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Form Panel -->
+                <div class="col-lg-6 bg-white">
+                    <div class="form d-flex align-items-center">
+                        <div class="content">
+                            {% include "forms/login_form.html" %}
+                            <a href="#" class="forgot-pass">忘记密码?</a><br><small>没有账户? </small><a href="#" class="signup">申请</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="copyrights text-center">
+        <p>For <a href="#" class="external">民易达</a>
+            <!-- 开发: 王健吉; QQ: 1148471941 -->
+        </p>
+    </div>
+</div>
+{% endblock %}

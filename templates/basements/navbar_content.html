@@ -1,0 +1,59 @@
+<div class="page-content d-flex align-items-stretch">
+    <!-- Side Navbar -->
+    <nav class="side-navbar">
+        <!-- Sidebar Navidation Menus-->
+        <span class="heading">数据表控制</span>
+        <ul class="list-unstyled">
+            <li id="nv-index"><a href="{% url 'index:index_home' %}"> <i class="icon-home"></i>主页</a></li>
+            <li id="nv-supplier"><a href="tables.html"> <i class="icon icon-user"></i>供应商管理</a></li>
+            <li id="nv-inWarehouse"><a href="charts.html"> <i class="icon-padnote"></i>入库单管理</a></li>
+            <li id="nv-outWarehouse"><a href="forms.html"> <i class="icon-check"></i>出库单管理</a></li>
+            <li id="nv-warehouse"><a href="forms.html"> <i class="icon-grid"></i>在库货管理</a></li>
+            <li id="nv-sale"><a href="forms.html"> <i class="icon icon-bill"></i>销售单管理</a></li>
+            <li id="nv-database"><a href="forms.html"> <i class="icon icon-website"></i>数据库管理</a></li>
+    </nav>
+
+    <div class="content-inner">
+        <!-- Breadcrumb-->
+        <div class="breadcrumb-holder container-fluid">
+            <ul class="breadcrumb" id="backend-control-breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'index:index_home' %}">Home</a></li>
+            </ul>
+        </div>
+
+        {% block content %}{% endblock %}
+
+        <!-- Page Footer-->
+        <footer class="main-footer">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <p>Copyright &copy; 民易达内部仓储管理系统  All rights reserved.</p>
+                    </div>
+                    <div class="col-sm-6 text-right">
+                        <!-- 开发者: 王健吉, QQ:1148471941 -->
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<script>
+    // 这里需要将active_navbar中的内容该为由后端传入的数据
+    active_navbar = "{{ active_navbar }}"
+    // 对于侧边内容的选中
+    // TODO: 增加侧边内容
+    var side_navbar_dict = {"index": "nv-index"}
+    var side_navbar = document.getElementById(side_navbar_dict[active_navbar])
+    side_navbar.setAttribute("class", "active")
+    // 对于breadcrumb
+    var new_element = document.createElement("li")
+    new_element.setAttribute("class", "breadcrumb-item active")
+    switch (active_navbar){
+        case "index":
+            new_element.innerText = active_navbar
+            document.getElementById("backend-control-breadcrumb").appendChild(new_element)
+            break
+    }
+</script>
