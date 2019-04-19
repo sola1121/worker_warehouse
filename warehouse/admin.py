@@ -1,15 +1,12 @@
 from django.contrib import admin
 
-# Register your models here.
-
-from django.contrib import admin
-
-from .models import Supplier, Warehouse, InWarehouse, OutWareHouse, Sale, History
+from .models import Classification, Supplier, Warehouse, InWarehouse, OutWareHouse, Sale, History
 
 # Register your models here.
 
-admin.site.site_title = "数据库后台管理"
-admin.site.site_header = "数据库管理界面"
+@admin.register(Classification)
+class ClassificationModelAdmin(admin.ModelAdmin):
+    pass
 
 
 @admin.register(Supplier)

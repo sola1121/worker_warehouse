@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # 自定应用
     "account",
     "index",
+    "warehouse",
 ]
 
 MIDDLEWARE = [

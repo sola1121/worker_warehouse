@@ -1,3 +1,5 @@
+import time
+
 from django.db import models
 
 from account.models import User
@@ -7,17 +9,40 @@ from account.models import User
 class History(models.Model):
     """人员操作记录"""
     id = models.AutoField(primary_key=True)
-    user_id = models.ForeignKey("User", related_name="history", on_delete=models.SET("被删除"))
-    action = models.CharField(verbose_name="用户活动", max_length=128)
-    create_data = models.DateTimeField(verbose_name="活动发生时间", auto_now_add=True)
+    user_id = models.IntegerField(verbose_name="用户对应的身份号")
+    affect_ware = models.CharField(verbose_name="受影响的表", max_length=32)
+    affect_ware_cn = models.CharField(verbose_name="受影响的表", max_length=32)
+    affect_id = models.IntegerField(verbose_name="受影响的表单号")
+    action = models.CharField(verbose_name="用户活动描述", max_length=256)
+    create_date = models.DateTimeField(verbose_name="活动发生时间", auto_now_add=True)
 
     def __str__(self):
-        return "{}, {}, {}".format(self.create_data, str(User.objects.get(id=self.user_id).username), self.action)
+        return "{}, {}, {}".format(self.create_date, str(User.objects.get(id=self.user_id).username), self.action)
+
+    def set_record(self, cur_user, model, msg):
+        if not issubclass(model, model.Model):
+            raise ValueError("Unknown model object %s, it's must be a subclass of models.Model." % type(model))
+        self.user_id = cur_user.id
+        self.affect_ware = model.get_model_name()
+        self.affect_ware_cn = model.get_model_name(language="cn")
+        self.affect_id = model.id
+        self.action = msg
+
+    def get_record(self):
+        cur_user = User.objects.get(id=self.user_id)
+        return "{} {}({}) {} {}".format(
+                time.strftime("%Y-%m-%d %H:%M:%S", self.create_date.timetuple()),
+                cur_user.username,
+                cur_user.full_name,
+                self.affect_ware_cn,
+                self.action
+            )
 
     class Meta:
-        db_name = "w_history"
+        db_table = "w_history"
         verbose_name = "用户操作记录"
         verbose_name_plural = "用户操作记录"
+        ordering = ["-id", "-create_date"]
 
 
 # class Units(models.Model):
@@ -34,6 +59,14 @@ class Classification(models.Model):
     def __str__(self):
         return self.class_name
 
+    def get_model_name(self, language="en"):
+        if language.lower() == "en":
+            return "Classification"
+        elif language.lower() == "cn":
+            return "物品分类"
+        else:
+            raise ValueError("Unknown language %s of Classification object" % language)
+
     class Meta:
         db_table = "w_classification"
         verbose_name = "分类"
@@ -49,6 +82,14 @@ class Supplier(models.Model):
 
     def __str__(self):
         return "{}, {}".format(self.supplier_id, self.supplier_name)
+    
+    def get_model_name(self, language="en"):
+        if language.lower() == "en":
+            return "Supplier"
+        elif language.lower() == "cn":
+            return "供应商"
+        else:
+            raise ValueError("Unknown language %s of Supplier object" % language)
 
     class Meta:
         db_table = "w_supplier"
@@ -74,6 +115,14 @@ class Warehouse(models.Model):
 
     def __str__(self):
         return "{}, {}".format(self.good_id, self.good_name)
+
+    def get_model_name(self, language="en"):
+        if language.lower() == "en":
+            return "Warehouse"
+        elif language.lower() == "cn":
+            return "储物库"
+        else:
+            raise ValueError("Unknown language %s of Warehouse object" % language)
 
     class Meta:
         db_table = "w_warehouse"
@@ -101,6 +150,14 @@ class InWarehouse(models.Model):
     def __str__(self):
         return "{}, {}".format(self.good_id, self.good_name)
 
+    def get_model_name(self, language="en"):
+        if language.lower() == "en":
+            return "InWarehouse"
+        elif language.lower() == "cn":
+            return "入库记录单"
+        else:
+            raise ValueError("Unknown language %s of InWarehouse object" % language)
+
     class Meta:
         db_table = "w_in_warehouse"
         verbose_name = "入库单"
@@ -126,6 +183,14 @@ class OutWareHouse(models.Model):
     
     def __str__(self):
         return "{}, {}".format(self.good_id, self.good_name)
+
+    def get_model_name(self, language="en"):
+        if language.lower() == "en":
+            return "OutWarehouse"
+        elif language.lower() == "cn":
+            return "出库记录单"
+        else:
+            raise ValueError("Unknown language %s of OutWarehouse object" % language)
 
     class Meta:
         db_table = "w_out_warehouse"
@@ -154,6 +219,14 @@ class Sale(models.Model):
 
     def __str__(self):
         return "{}, {}".format(self.good_id, self.good_name)
+
+    def get_model_name(self, language="en"):
+        if language.lower() == "en":
+            return "Sale"
+        elif language.lower() == "cn":
+            return "销售单"
+        else:
+            raise ValueError("Unknown language %s of Sale object" % language)
 
     class Meta:
         db_table = "w_sale"

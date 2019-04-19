@@ -34,7 +34,7 @@ def account_logout(request):
     return render(request, "app_account/login.html")
 
 
-@login_required(login_url="")
+@login_required(login_url="/")
 def account_change_password(request):
     if request.method == "POST":
         old_pass = request.POST.get("oldPassword", None)
@@ -49,5 +49,6 @@ def account_change_password(request):
             return render(request, "app_account/change_password.html", {"error_msg": "新密码不一致"})
         user.set_password(new_pass1)
         user.save()
-        account_logout(request)
+        logout(request)
+        return redirect("/")
     return render(request, "app_account/change_password.html")
