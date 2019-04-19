@@ -1,0 +1,40 @@
+    {# 在上面写入内容, 必须和1连用 #}
+        <!-- Page Footer-->
+        {% include "basements/footer.html" %}
+    </div>
+</div>
+
+<script>
+    // 这里需要将active_navbar中的内容该为由后端传入的数据
+    user_superuser = {% if request.user.is_superuser %} true {% else %} false {% endif %}
+    active_navbar = "{{ active_navbar }}"
+    // 对于侧边内容的选中
+    // TODO: 增加侧边内容
+    var side_navbar_dict = {"index": "nv-index", "supplier": "nv-supplier", "classification": "nv-classification"}
+    var side_navbar = document.getElementById(side_navbar_dict[active_navbar])
+    side_navbar.setAttribute("class", "active")
+    // 对于breadcrumb
+    var new_element = document.createElement("li")
+    new_element.setAttribute("class", "breadcrumb-item active")
+    switch (active_navbar){
+        case "index":
+            new_element.innerText = active_navbar
+            break
+        case "supplier":
+            new_element.innerText = active_navbar
+            break
+    }
+    document.getElementById("backend-control-breadcrumb").appendChild(new_element)
+
+    var admin_page = document.getElementById("nv-database")
+    admin_page.addEventListener("click", function(evt){
+        if (user_superuser){
+            var flag = window.confirm("页面将会进入到超级用户管理界面, 是否进行跳转.")
+            if (flag) {
+                window.location.href = "/admin"
+            }
+        } else {
+            window.alert("权限不足, 需要超级用户权限.")
+        }
+    }, false)
+</script>

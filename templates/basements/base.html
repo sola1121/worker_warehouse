@@ -24,6 +24,14 @@
     <!--[if lt IE 9]-->
         <script src="{%static 'js/html5shiv.min.js' %}"></script>
         <script src="{%static 'js/respond.min.js' %}"></script>
+    <style>
+      .container-content{
+        margin-left: 2em;
+        margin-right: 2em;
+        padding: 0%;
+      }
+    </style>
+    {% block base_style %}{% endblock %}
   </head>
   <body>
     {% block body %}{% endblock %}    
