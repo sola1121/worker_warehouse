@@ -54,6 +54,7 @@ class Classification(models.Model):
     """物品分类"""
     id = models.AutoField(primary_key=True)
     class_name = models.CharField(verbose_name="物品种类", max_length=32, unique=True, null=False, db_index=True)
+    is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
     remark = models.TextField(verbose_name="备注")
 
     def __str__(self):
@@ -78,6 +79,7 @@ class Supplier(models.Model):
     id = models.AutoField(primary_key=True)
     supplier_id = models.CharField(verbose_name="供应商编号", max_length=32, unique=True, null=False, db_index=True)
     supplier_name = models.CharField(verbose_name="供应商名称", max_length=64)
+    is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
     remark = models.TextField(verbose_name="备注")
 
     def __str__(self):
@@ -109,6 +111,7 @@ class Warehouse(models.Model):
     unit = models.CharField(verbose_name="计件单位", max_length=32, default="未定义")
     price = models.FloatField(verbose_name="总金额", default=0)
     update_date = models.DateTimeField(verbose_name="更新时间", auto_now=True)
+    is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
     remark = models.TextField(verbose_name="备注")
     # 供应商外键
     supplier = models.ForeignKey("Supplier", related_name="warehouse", on_delete=models.SET("数据删除"))
@@ -143,6 +146,7 @@ class InWarehouse(models.Model):
     in_price = models.FloatField(verbose_name="总金额", default=0)
     create_date = models.DateTimeField(verbose_name="生成时间", auto_now_add=True)
     is_finished = models.BooleanField(verbose_name="是否完成", default=False)
+    is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
     remark = models.TextField(verbose_name="备注")
     # 供应商外键
     supplier = models.ForeignKey("Supplier", related_name="inWarehouse", on_delete=models.SET("数据删除"))
@@ -177,6 +181,7 @@ class OutWareHouse(models.Model):
     out_price = models.FloatField(verbose_name="总金额", default=0)
     create_date = models.DateTimeField(verbose_name="生成时间", auto_now_add=True)
     is_finished = models.BooleanField(verbose_name="是否完成", default=False)
+    is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
     remark = models.TextField(verbose_name="备注")
     # 供应商外键
     supplier = models.ForeignKey("Supplier", related_name="outWarehouse", on_delete=models.SET("数据删除"))
@@ -211,6 +216,7 @@ class Sale(models.Model):
     out_price = models.FloatField(verbose_name="销售金额", default=0)
     create_date = models.DateTimeField(verbose_name="生成时间", auto_now_add=True)
     is_finished = models.BooleanField(verbose_name="是否完成", default=False)
+    is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
     remark = models.TextField(verbose_name="备注")
     # 供应商外键
     supplier = models.ForeignKey("Supplier", related_name="sale", on_delete=models.SET("数据删除"))

@@ -6,13 +6,13 @@
 {% include "basements/navbar_header.html" %}
 {% include "basements/navbar_content_1.html" %}
 
-<div class="container container-content">
+<div class="container-fluid">
     <div class="row">
-        <div class="col-md-3 col-sm-3">
+        <div class="col-md-4 col-sm-4">
             <button type="button" class="btn btn-primary"><i class="fa fa-plus-square"></i>添加供应商</button>
             <button type="button" class="btn btn-primary"><i class="fa fa-download"></i>下载当前结果</button>
         </div>
-        <div class="col-md-9 col-sm-9">
+        <div class="col-md-8 col-sm-8">
             <div class="container-fluid">
                 {% include "forms/search_supplier_form.html" %}
             </div>
@@ -20,15 +20,109 @@
     </div>
 </div>
 
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>供应商编号</th>
+                        <th>供应商名字</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contact in pagetor %}
+                    <tr>
+                        <th class="backend-num-id" scope="row"></th>
+                        <th>{{contact.supplier_id}}</th>
+                        <th>{{contact.supplier_name}}</th>
+                        <th class="backend-remark">
+                            {% if contact.remark %}
+                            <a href="#" data-toggle="popover" title="{{contact.remark}}"></a>
+                            {% endif %}
+                        </th>
+                        <th>
+                            <button type="button" class="btn btn-warning btn-sm" data-toggle="tooltip" data-placement="bottom" title="编辑内容"><i class="fa fa-edit"></i></button>
+                            <button type="button" class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="bottom" title="删除内容"><i class="fa fa-trash"></i></button>
+                        </th>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="float-left ml-3">
+    <small>总数据量: {{pagetor.paginator.count}}, 页数: {{pagetor.paginator.num_pages}}</small>
+</div>
+
+<nav class="float-right mr-3" aria-label="Page navigation">
+    <ul class="pagination">
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:supplier_home' %}1/">&laquo;&laquo;</a></li>
+        {% if pagetor.has_previous %}
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:supplier_home' %}{{pagetor.previous_page_number}}/">{{pagetor.previous_page_number}}</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{pagetor.number}}</span></li>
+        {% if pagetor.has_next %}
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:supplier_home' %}{{pagetor.next_page_number}}/">{{pagetor.next_page_number}}</a></li>
+        {% endif %}
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:supplier_home' %}{{pagetor.paginator.num_pages}}/">&raquo;&raquo;</a></li>
+    </ul>
+</nav>
+
 {% include "basements/navbar_content_2.html" %}
 {% endblock %}
 
 {% block base_script %}
 <script>
-$("#supplierSearch").on("click", function(evt){
-    var supplier_name = $("#searchSupplierName").val()
-    window.alert(supplier_name, "{% url 'warehouse:supplier_home' %}")
-    // window.location.href = "{% url 'warehouse:supplier_home' %}" + "&supplierName=" + supplier_name
-})
+    // 搜索按钮
+    $("#supplierSearch").on("click", function (evt) {
+        var supplier_id = $("#searchSupplierId").val()
+        var supplier_name = $("#searchSupplierName").val()
+        window.alert("{% url 'warehouse:supplier_home' %}1/?supplierId=" + supplier_id + "&supplierName=" + supplier_name)
+        window.location = "{% url 'warehouse:supplier_home' %}1/?supplierId=" + supplier_id + "&supplierName=" + supplier_name
+    })
+
+    // 翻页带条件
+    var supplierId = "{% if supplier_id %}{{supplier_id}}{% endif %}"
+    var supplierName = "{% if supplier_name %}{{supplier_name}}{% endif %}"
+    if (supplierId || supplierName){
+        if (supplierId){
+            $("#searchSupplierId").val(supplierId)
+        }
+        if (supplierName){
+            $("#searchSupplierName").val(supplierName)
+        }
+        var page_items = $(".pagination").get(0).getElementsByTagName("li")
+        for(var i=0; i<page_items.length; i++){
+            var a_element = page_items[i].getElementsByTagName("a")
+            if (a_element){
+                var origin_href = a_element.getAttribute("href")
+                a_element.setAttribute("href", origin_href + "?supplierId=" + supplierId?supplierId:'' + "&supplierName=" + supplierName?supplierName:'')
+            }
+        }
+    }
+
+    var number_ids = $(".backend-num-id")
+    for (var i=0; i<number_ids.length; i++){
+        number_ids[i].textContent = i+1
+    }
+
+    var remark_texts = $(".backend-remark").children()
+    if (remark_texts.length > 0){
+        for (var i=0; i<remark_texts.length; i++){
+            var obj_title = remark_texts[i].getAttribute("title")
+            if (obj_title.length > 8){
+                remark_texts[i].textContent = obj_title.slice(0, 8) + "..."
+            } else {
+                remark_texts[i].textContent = obj_title
+            }
+        }
+    }
+
 </script>
 {% endblock %}

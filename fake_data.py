@@ -12,7 +12,7 @@ from warehouse import models
 faker_en = Faker(locale="en_US")
 faker_cn = Faker(locale="zh_CN")
 
-count = 10
+count = 50
 ready = models.Supplier.objects.count()
 print("数据库Supplier中已有%s 个数据, 期望达到%s, 将会生成%s" % (ready, count, count-ready if ready<count else 0))
 if  ready < count:
