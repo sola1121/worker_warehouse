@@ -9,8 +9,8 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-4 col-sm-4">
-            <button type="button" class="btn btn-primary"><i class="fa fa-plus-square"></i>添加供应商</button>
-            <button type="button" class="btn btn-primary"><i class="fa fa-download"></i>下载当前结果</button>
+            <button type="button" id="backend-add" class="btn btn-primary"><i class="fa fa-plus-square"></i>添加供应商</button>
+            <button type="button" id="backend-download" class="btn btn-primary"><i class="fa fa-download"></i>下载当前结果</button>
         </div>
         <div class="col-md-8 col-sm-8">
             <div class="container-fluid">
@@ -45,8 +45,8 @@
                             {% endif %}
                         </th>
                         <th>
-                            <button type="button" class="btn btn-warning btn-sm" data-toggle="tooltip" data-placement="bottom" title="编辑内容"><i class="fa fa-edit"></i></button>
-                            <button type="button" class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="bottom" title="删除内容"><i class="fa fa-trash"></i></button>
+                            <button type="button" id="backend-edit" class="btn btn-warning btn-sm" data-toggle="tooltip" data-placement="bottom" value_id="{{contact.supplier_id}}" title="编辑内容"><i class="fa fa-edit"></i></button>
+                            <button type="button" id="backend-delete" class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="bottom" value_id="{{contact.supplier_id}}" title="删除内容"><i class="fa fa-trash"></i></button>
                         </th>
                     </tr>
                     {% endfor %}
@@ -79,47 +79,118 @@
 
 {% block base_script %}
 <script>
-    // 搜索按钮
-    $("#supplierSearch").on("click", function (evt) {
-        var supplier_id = $("#searchSupplierId").val()
-        var supplier_name = $("#searchSupplierName").val()
-        window.alert("{% url 'warehouse:supplier_home' %}1/?supplierId=" + supplier_id + "&supplierName=" + supplier_name)
-        window.location = "{% url 'warehouse:supplier_home' %}1/?supplierId=" + supplier_id + "&supplierName=" + supplier_name
-    })
+    window.onload = function(){
+        thisPageInit.initButton()
+        thisPageInit.initContent()
+        thisPageInit.initPagination()
+    }
 
-    // 翻页带条件
-    var supplierId = "{% if supplier_id %}{{supplier_id}}{% endif %}"
-    var supplierName = "{% if supplier_name %}{{supplier_name}}{% endif %}"
-    if (supplierId || supplierName){
-        if (supplierId){
-            $("#searchSupplierId").val(supplierId)
+    var thisPageInit = {
+        initButton: function (){buttonSearch(); buttonDownload(); buttonAdd(); buttonEdit(); buttonDelete()},
+        initContent: function(){itemNum(); remarkShotcut()},
+        initPagination: function(){paginationLink()},
+    }
+
+
+    function buttonSearch(){
+        // 搜索按钮功能赋予
+        $("#supplierSearch").on("click", function (evt) {
+            var supplier_id = $("#searchSupplierId").val()
+            var supplier_name = $("#searchSupplierName").val()
+            window.location.href = "{% url 'warehouse:supplier_home' %}1/?supplierId=" + supplier_id + "&supplierName=" + supplier_name
+        })
+    }
+    
+
+    function buttonDownload(){
+        // TODO: 下载功能来一波
+        $("#backend-download").on("click", function(evt){
+            window.alert(getQueryString("supplierId"))
+        })
+    }
+
+
+    function buttonAdd(){
+        // 添加按钮功能赋予
+        $("#backend-add").on("click", function(evt){
+            window.location.href = "{% url 'warehouse:supplier_modify' %}"
+        })
+    }
+
+    
+    function buttonEdit(){
+        // 编辑按钮功能赋予
+        $("#backend-edit").on("click", function(evt){
+            var supplier_id = this.getAttribute("value_id")
+            window.alert("应该跳转到编辑页面", supplier_id)
+        })
+    }
+
+
+    function buttonDelete(){
+        // 删除按钮功能赋予
+        $("#backend-delete").on("click", function(evt){
+            var supplier_id = this.getAttribute("value_id")
+            window.alert("通过异步请求删除" + supplier_id)
+            $.ajax({
+                url: "{% url 'warehouse:supplier_delete' %}",
+                type: "post",
+                async: true,
+                dataType: "json",
+                data: {supplierId: supplier_id},
+                success: function(reback){
+                    if (reback["back_msg"]== "OK"){
+                        window.location.reload()
+                    } else {
+                        window.alert(reback["back_msg"])
+                    }
+                }
+            })
+        })
+    }
+
+
+    function itemNum(){
+        // 内容编号
+        var number_ids = $(".backend-num-id")
+        for (var i=0; i<number_ids.length; i++){
+            number_ids[i].textContent = i+1
         }
-        if (supplierName){
-            $("#searchSupplierName").val(supplierName)
-        }
-        var page_items = $(".pagination").get(0).getElementsByTagName("li")
-        for(var i=0; i<page_items.length; i++){
-            var a_element = page_items[i].getElementsByTagName("a")
-            if (a_element){
-                var origin_href = a_element.getAttribute("href")
-                a_element.setAttribute("href", origin_href + "?supplierId=" + supplierId?supplierId:'' + "&supplierName=" + supplierName?supplierName:'')
+    }
+
+
+    function remarkShotcut(){
+        // 备注截取
+        var remark_texts = $(".backend-remark").children()
+        if (remark_texts.length > 0){
+            for (var i=0; i<remark_texts.length; i++){
+                var obj_title = remark_texts[i].getAttribute("title")
+                if (obj_title.length > 8){
+                    remark_texts[i].textContent = obj_title.slice(0, 8) + "..."
+                } else {
+                    remark_texts[i].textContent = obj_title
+                }
             }
         }
     }
 
-    var number_ids = $(".backend-num-id")
-    for (var i=0; i<number_ids.length; i++){
-        number_ids[i].textContent = i+1
-    }
 
-    var remark_texts = $(".backend-remark").children()
-    if (remark_texts.length > 0){
-        for (var i=0; i<remark_texts.length; i++){
-            var obj_title = remark_texts[i].getAttribute("title")
-            if (obj_title.length > 8){
-                remark_texts[i].textContent = obj_title.slice(0, 8) + "..."
-            } else {
-                remark_texts[i].textContent = obj_title
+    function paginationLink(){
+        // 翻页带条件
+        var supplierId = "{% if supplier_id %}{{supplier_id}}{% endif %}"
+        var supplierName = "{% if supplier_name %}{{supplier_name}}{% endif %}"
+        if (supplierId || supplierName){
+            if (supplierId){
+                $("#searchSupplierId").val(supplierId)
+            }
+            if (supplierName){
+                $("#searchSupplierName").val(supplierName)
+            }
+            var page_items_a = $(".pagination>.page-item>a")
+            console.log("原始的对象", page_items_a)
+            for(var i=0; i<page_items_a.length; i++){
+                var origin_href = page_items_a[i].getAttribute("href")
+                page_items_a[i].setAttribute("href", origin_href + "?supplierId=" + supplierId + "&supplierName=" + supplierName)
             }
         }
     }

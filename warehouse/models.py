@@ -49,38 +49,13 @@ class History(models.Model):
 #     """计件单位"""
 #     id = models.AutoField(primary_key=True)
 
-
-class Classification(models.Model):
-    """物品分类"""
-    id = models.AutoField(primary_key=True)
-    class_name = models.CharField(verbose_name="物品种类", max_length=32, unique=True, null=False, db_index=True)
-    is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
-    remark = models.TextField(verbose_name="备注")
-
-    def __str__(self):
-        return self.class_name
-
-    def get_model_name(self, language="en"):
-        if language.lower() == "en":
-            return "Classification"
-        elif language.lower() == "cn":
-            return "物品分类"
-        else:
-            raise ValueError("Unknown language %s of Classification object" % language)
-
-    class Meta:
-        db_table = "w_classification"
-        verbose_name = "分类"
-        verbose_name_plural = "分类"
-
-
 class Supplier(models.Model):
     """供应商"""
     id = models.AutoField(primary_key=True)
     supplier_id = models.CharField(verbose_name="供应商编号", max_length=32, unique=True, null=False, db_index=True)
     supplier_name = models.CharField(verbose_name="供应商名称", max_length=64)
     is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
-    remark = models.TextField(verbose_name="备注")
+    remark = models.TextField(verbose_name="备注", null=True)
 
     def __str__(self):
         return "{}, {}".format(self.supplier_id, self.supplier_name)
@@ -99,6 +74,30 @@ class Supplier(models.Model):
         verbose_name_plural = "供应商"
 
 
+class Classification(models.Model):
+    """物品分类"""
+    id = models.AutoField(primary_key=True)
+    class_name = models.CharField(verbose_name="物品种类", max_length=32, unique=True, null=False, db_index=True)
+    is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
+    remark = models.TextField(verbose_name="备注", null=True)
+
+    def __str__(self):
+        return self.class_name
+
+    def get_model_name(self, language="en"):
+        if language.lower() == "en":
+            return "Classification"
+        elif language.lower() == "cn":
+            return "物品分类"
+        else:
+            raise ValueError("Unknown language %s of Classification object" % language)
+
+    class Meta:
+        db_table = "w_classification"
+        verbose_name = "分类"
+        verbose_name_plural = "分类"
+
+
 class Warehouse(models.Model):
     """货物存储库"""
     id = models.AutoField(primary_key=True)
@@ -112,7 +111,7 @@ class Warehouse(models.Model):
     price = models.FloatField(verbose_name="总金额", default=0)
     update_date = models.DateTimeField(verbose_name="更新时间", auto_now=True)
     is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
-    remark = models.TextField(verbose_name="备注")
+    remark = models.TextField(verbose_name="备注", null=True)
     # 供应商外键
     supplier = models.ForeignKey("Supplier", related_name="warehouse", on_delete=models.SET("数据删除"))
 
@@ -147,7 +146,7 @@ class InWarehouse(models.Model):
     create_date = models.DateTimeField(verbose_name="生成时间", auto_now_add=True)
     is_finished = models.BooleanField(verbose_name="是否完成", default=False)
     is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
-    remark = models.TextField(verbose_name="备注")
+    remark = models.TextField(verbose_name="备注", null=True)
     # 供应商外键
     supplier = models.ForeignKey("Supplier", related_name="inWarehouse", on_delete=models.SET("数据删除"))
 
@@ -182,7 +181,7 @@ class OutWareHouse(models.Model):
     create_date = models.DateTimeField(verbose_name="生成时间", auto_now_add=True)
     is_finished = models.BooleanField(verbose_name="是否完成", default=False)
     is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
-    remark = models.TextField(verbose_name="备注")
+    remark = models.TextField(verbose_name="备注", null=True)
     # 供应商外键
     supplier = models.ForeignKey("Supplier", related_name="outWarehouse", on_delete=models.SET("数据删除"))
     
@@ -217,7 +216,7 @@ class Sale(models.Model):
     create_date = models.DateTimeField(verbose_name="生成时间", auto_now_add=True)
     is_finished = models.BooleanField(verbose_name="是否完成", default=False)
     is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
-    remark = models.TextField(verbose_name="备注")
+    remark = models.TextField(verbose_name="备注", null=True)
     # 供应商外键
     supplier = models.ForeignKey("Supplier", related_name="sale", on_delete=models.SET("数据删除"))
     # 出库单外键

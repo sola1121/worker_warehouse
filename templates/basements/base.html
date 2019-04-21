@@ -21,9 +21,11 @@
     <link rel="stylesheet" href="{%static 'css/custom.css' %}">
     <!-- Favicon-->
     <link rel="shortcut icon" href="{%static 'img/favicon.ico' %}">
+    <!-- JQueryUI css -->
+    <link rel="stylesheet" href="{%static 'vendor/jquery-ui/jquery-ui.min.css' %}">
     <!--[if lt IE 9]-->
-        <script src="{%static 'js/html5shiv.min.js' %}"></script>
-        <script src="{%static 'js/respond.min.js' %}"></script>
+      <script src="{%static 'js/html5shiv.min.js' %}"></script>
+      <script src="{%static 'js/respond.min.js' %}"></script>
     {% block base_style %}{% endblock %}
   </head>
   <body>
@@ -35,8 +37,10 @@
     <script src="{%static 'vendor/jquery.cookie/jquery.cookie.js' %}"> </script>
     <script src="{%static 'vendor/chart.js/Chart.min.js' %}"></script>
     <script src="{%static 'vendor/jquery-validation/jquery.validate.min.js' %}"></script>
+    <script src="{%static 'vendor/jquery-ui/jquery-ui.min.js' %}"></script>
     <!-- Main File-->
     <script src="{%static 'js/front.js' %}"></script>
   </body>
+<script src="{% static 'js/common_tools.js' %}"></script>
 {% block base_script %}{% endblock %}
 </html>
