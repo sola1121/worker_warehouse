@@ -17,7 +17,7 @@ class History(models.Model):
     create_date = models.DateTimeField(verbose_name="活动发生时间", auto_now_add=True)
 
     def __str__(self):
-        return "{}, {}, {}".format(self.create_date, str(User.objects.get(id=self.user_id).username), self.action)
+        return "{} - {} - {}".format(self.create_date, str(User.objects.get(id=self.user_id).username), self.action)
 
     def set_record(self, cur_user, model, msg):
         if not issubclass(model, model.Model):
@@ -55,11 +55,14 @@ class Supplier(models.Model):
     supplier_id = models.CharField(verbose_name="供应商编号", max_length=32, unique=True, null=False, db_index=True)
     supplier_name = models.CharField(verbose_name="供应商名称", max_length=64)
     is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
-    remark = models.TextField(verbose_name="备注", null=True)
+    remark = models.TextField(verbose_name="备注", null=True, blank=True)
 
     def __str__(self):
-        return "{}, {}".format(self.supplier_id, self.supplier_name)
+        return "{} - {}".format(self.supplier_id, self.supplier_name)
     
+    def short_remark(self):
+        return self.remark[:16]
+
     def get_model_name(self, language="en"):
         if language.lower() == "en":
             return "Supplier"
@@ -79,10 +82,13 @@ class Classification(models.Model):
     id = models.AutoField(primary_key=True)
     class_name = models.CharField(verbose_name="物品种类", max_length=32, unique=True, null=False, db_index=True)
     is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
-    remark = models.TextField(verbose_name="备注", null=True)
+    remark = models.TextField(verbose_name="备注", null=True, blank=True)
 
     def __str__(self):
         return self.class_name
+    
+    def short_remark(self):
+        return self.remark[:16]
 
     def get_model_name(self, language="en"):
         if language.lower() == "en":
@@ -104,19 +110,22 @@ class Warehouse(models.Model):
     good_id = models.CharField(verbose_name="储物编号", max_length=32, unique=True, null=False, db_index=True)
     good_name = models.CharField(verbose_name="储物名称", max_length=64)
     # 分类外键
-    classification = models.ForeignKey("Classification", null=True, related_name="warehouse", on_delete=models.SET_NULL)
+    classification = models.ForeignKey("Classification", null=True, blank=True, related_name="warehouse", on_delete=models.SET_NULL)
     spec = models.CharField(verbose_name="规格/型号", max_length=32, default="未定义")
     amount = models.IntegerField(verbose_name="数量", default=0)
     unit = models.CharField(verbose_name="计件单位", max_length=32, default="未定义")
     price = models.FloatField(verbose_name="总金额", default=0)
     update_date = models.DateTimeField(verbose_name="更新时间", auto_now=True)
     is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
-    remark = models.TextField(verbose_name="备注", null=True)
+    remark = models.TextField(verbose_name="备注", null=True, blank=True)
     # 供应商外键
     supplier = models.ForeignKey("Supplier", related_name="warehouse", on_delete=models.SET("数据删除"))
 
     def __str__(self):
-        return "{}, {}".format(self.good_id, self.good_name)
+        return "{} - {}".format(self.good_id, self.good_name)
+
+    def short_remark(self):
+        return self.remark[:16]
 
     def get_model_name(self, language="en"):
         if language.lower() == "en":
@@ -138,7 +147,7 @@ class InWarehouse(models.Model):
     good_id = models.CharField(verbose_name="储物编号", max_length=32, unique=True, null=False, db_index=True)
     good_name = models.CharField(verbose_name="储物名称", max_length=64)
     # 分类外键
-    classification = models.ForeignKey("Classification", null=True, related_name="inWarehouse", on_delete=models.SET_NULL)
+    classification = models.ForeignKey("Classification", null=True, blank=True, related_name="inWarehouse", on_delete=models.SET_NULL)
     spec = models.CharField(verbose_name="规格/型号", max_length=32, default="未定义")
     in_amount = models.IntegerField(verbose_name="数量", default=0)
     unit = models.CharField(verbose_name="计件单位", max_length=32, default="未定义")
@@ -146,12 +155,15 @@ class InWarehouse(models.Model):
     create_date = models.DateTimeField(verbose_name="生成时间", auto_now_add=True)
     is_finished = models.BooleanField(verbose_name="是否完成", default=False)
     is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
-    remark = models.TextField(verbose_name="备注", null=True)
+    remark = models.TextField(verbose_name="备注", null=True, blank=True)
     # 供应商外键
     supplier = models.ForeignKey("Supplier", related_name="inWarehouse", on_delete=models.SET("数据删除"))
 
     def __str__(self):
-        return "{}, {}".format(self.good_id, self.good_name)
+        return "{} - {}".format(self.good_id, self.good_name)
+
+    def short_remark(self):
+        return self.remark[:16]
 
     def get_model_name(self, language="en"):
         if language.lower() == "en":
@@ -173,7 +185,7 @@ class OutWareHouse(models.Model):
     good_id = models.CharField(verbose_name="储物编号", max_length=32, unique=True, null=False, db_index=True)
     good_name = models.CharField(verbose_name="储物名称", max_length=64)
     # 分类外键
-    classification = models.ForeignKey("Classification", null=True, related_name="outWarehouse", on_delete=models.SET_NULL)
+    classification = models.ForeignKey("Classification", null=True, blank=True, related_name="outWarehouse", on_delete=models.SET_NULL)
     spec = models.CharField(verbose_name="规格/型号", max_length=32, default="未定义")
     out_amount = models.IntegerField(verbose_name="数量", default=0)
     unit = models.CharField(verbose_name="计件单位", max_length=32, default="未定义")
@@ -181,12 +193,15 @@ class OutWareHouse(models.Model):
     create_date = models.DateTimeField(verbose_name="生成时间", auto_now_add=True)
     is_finished = models.BooleanField(verbose_name="是否完成", default=False)
     is_deleted = models.BooleanField(verbose_name="是否标记删除", default=False)
-    remark = models.TextField(verbose_name="备注", null=True)
+    remark = models.TextField(verbose_name="备注", null=True, blank=True)
     # 供应商外键
     supplier = models.ForeignKey("Supplier", related_name="outWarehouse", on_delete=models.SET("数据删除"))
     
     def __str__(self):
-        return "{}, {}".format(self.good_id, self.good_name)
+        return "{} - {}".format(self.good_id, self.good_name)
+
+    def short_remark(self):
+        return self.remark[:16]
 
     def get_model_name(self, language="en"):
         if language.lower() == "en":
@@ -223,7 +238,10 @@ class Sale(models.Model):
     good_from = models.ForeignKey("OutWarehouse", null=True, related_name="sale", on_delete=models.SET_NULL)
 
     def __str__(self):
-        return "{}, {}".format(self.good_id, self.good_name)
+        return "{} - {}".format(self.good_id, self.good_name)
+
+    def short_remark(self):
+        return self.remark[:16]
 
     def get_model_name(self, language="en"):
         if language.lower() == "en":

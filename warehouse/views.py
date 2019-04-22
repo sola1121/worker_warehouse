@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 
@@ -12,6 +12,7 @@ PER_PAGE = 10
 ### 供应商相关 ###
 
 def supplier(request, page=1):
+    """供应商页面显示与查询"""
     supplier_id = request.GET.get("supplierId", '')
     supplier_name = request.GET.get("supplierName", '')
     suppliers = models.Supplier.objects.filter(is_deleted=False, 
@@ -30,20 +31,30 @@ def supplier(request, page=1):
 
 
 def supplier_modify(request):
+    """供应商添加与修改"""
+    supplier_id = request.GET.get("supplierId", '')
     form = forms.SupplierForm()
-    # TODO: 通过GET方式传递supplier_id, 来对相应的表单进行编辑
+    if supplier_id:
+        supplier = get_object_or_404(models.Supplier, supplier_id=supplier_id)
+        print(supplier)
+        form = forms.SupplierForm(instance=supplier)
     if request.method == "POST":
-        data = request.POST
-        print(data)
-        return JsonResponse({"back_msg": OK})
+        form = forms.SupplierForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({"back_msg": OK})
+        else:
+            print(form.errors)
+            return JsonResponse({"back_msg": "保存失败"})
     return render(request, 
                   "app_warehouse/supplier_change.html", 
-                  {"head_title": "添加供应商",
+                  {"head_title": "编辑供应商",
                    "active_navbar": "supplier",
                    "form": form})
 
 
 def supplier_delete(request):
+    """供应商删除"""
     supplier_id = request.POST.get("supplierId", '')
     try:
         supplier = models.Supplier.objects.get(supplier_id=supplier_id)
@@ -55,4 +66,5 @@ def supplier_delete(request):
 
 
 def supplier_download(request):
+    """下载查询结果"""
     pass

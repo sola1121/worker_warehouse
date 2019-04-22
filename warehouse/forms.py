@@ -15,7 +15,7 @@ class SupplierForm(ModelForm):
         widgets = {
             "supplier_id": TextInput(attrs={"id": "backend-supplierId", "class": "form-control",}),
             "supplier_name": TextInput(attrs={"id": "backend-supplierName", "class": "form-control"}),
-            "remark": Textarea(attrs={"id": "backend-remark", "class": "form-control", "required": False}),
+            "remark": Textarea(attrs={"id": "backend-remark", "class": "form-control"}),
             }
 
 

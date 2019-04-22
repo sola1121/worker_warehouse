@@ -11,9 +11,9 @@
 
                     
         <div class="container w-25">
-            <form>
+            <form id="supplierAddForm">
                 {{ form.as_p }}
-                <button id="backend-add-confirm" type="button" class="btn btn-primary">确认添加</button>
+                <button id="backend-add-confirm" type="button" class="btn btn-primary">确认保存</button>
                 <button type="backend-add-anothor" class="btn btn-primary">保存并添加另一个</button>
                 <a class="btn btn-info float-right" href="{% url 'warehouse:supplier_home' %}">返回</a>
             </form>
@@ -38,25 +38,31 @@
     function buttonAddConfirm(){
         // 添加一个并返回浏览页
         $("#backend-add-confirm").on("click", function(){
-            $.post(
-                "{% url 'warehouse:supplier_modify' %}",
-                {"supplier_id": $("#backend-supplierId").val(), "supplier_name": $("#backend-supplierName").val(), "remark": $("#backend-remark").val()},
-                function(reback, status){
-                    if (reback["back_msg"] == "OK"){
-                        window.alert("成功的通了")
-                        // window.location.href = "{% url 'warehouse:supplier_home' %}"
-                    } else {
-                        window.alert(reback["back_msg"])
-                    }
-                },
-                "json"
-            )
+            asyncPost("{% url 'warehouse:supplier_home' %}")
         })
     }
 
     function buttonAddAnother(){
         // 添加一个依然保持在当前
-        // window.location.reload()
+        // window.location.href = "{% url 'warehouse:supplier_modify' %}"
+    }
+
+    function asyncPost(next_page){
+        $.post(
+            "{% url 'warehouse:supplier_modify' %}",
+            {"supplier_id": $("#backend-supplierId").val(), "supplier_name": $("#backend-supplierName").val(), "remark": $("#backend-remark").val()},
+            function(reback, status){
+                if (reback["back_msg"] == "OK"){
+                    window.alert(status + ", 成功的通了")
+                    if (next_page){
+                        // window.location.href = next_page
+                    }
+                } else {
+                    window.alert(reback["back_msg"])
+                }
+            },
+            "json"
+        )
     }
 
 </script>
