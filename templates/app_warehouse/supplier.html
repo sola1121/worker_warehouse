@@ -105,7 +105,18 @@
     function buttonDownload(){
         // TODO: 下载功能来一波
         $("#backend-download").on("click", function(evt){
-            window.alert(getQueryString("supplierId") + getQueryString("supplierName"))
+            window.alert("将进行文件下载, 筛选条件-" + getQueryString("supplierId") + getQueryString("supplierName"))
+            var supplierId = getQueryString("supplierId")
+            var supplierName = getQueryString("supplierName")
+            var download_url = "{% url 'warehouse:supplier_download' %}?supplierId=" + supplierId + "&supplierName=" + supplierName
+            var filename = (supplierId || supplierName) ? "供应商 - 搜索编号_" + supplierId + ", 搜索名称_" + supplierName + ".xlsx" : "供应商.xlsx"
+            // 模拟下载, 仅htm5支持
+            var aElement = document.createElement('a');
+
+            aElement.setAttribute('href', download_url);
+            aElement.setAttribute('download', filename);
+            aElement.click();
+
         })
     }
 

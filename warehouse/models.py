@@ -61,7 +61,7 @@ class Supplier(models.Model):
         return "{} - {}".format(self.supplier_id, self.supplier_name)
     
     def short_remark(self):
-        return self.remark[:16]
+        return str(self.remark[:16]) + "..."
 
     def get_model_name(self, language="en"):
         if language.lower() == "en":
@@ -88,7 +88,7 @@ class Classification(models.Model):
         return self.class_name
     
     def short_remark(self):
-        return self.remark[:16]
+        return str(self.remark[:16]) + "..."
 
     def get_model_name(self, language="en"):
         if language.lower() == "en":
@@ -125,7 +125,7 @@ class Warehouse(models.Model):
         return "{} - {}".format(self.good_id, self.good_name)
 
     def short_remark(self):
-        return self.remark[:16]
+        return str(self.remark[:16]) + "..."
 
     def get_model_name(self, language="en"):
         if language.lower() == "en":
@@ -163,7 +163,7 @@ class InWarehouse(models.Model):
         return "{} - {}".format(self.good_id, self.good_name)
 
     def short_remark(self):
-        return self.remark[:16]
+        return str(self.remark[:16]) + "..."
 
     def get_model_name(self, language="en"):
         if language.lower() == "en":
@@ -201,7 +201,7 @@ class OutWareHouse(models.Model):
         return "{} - {}".format(self.good_id, self.good_name)
 
     def short_remark(self):
-        return self.remark[:16]
+        return str(self.remark[:16]) + "..."
 
     def get_model_name(self, language="en"):
         if language.lower() == "en":
@@ -241,7 +241,7 @@ class Sale(models.Model):
         return "{} - {}".format(self.good_id, self.good_name)
 
     def short_remark(self):
-        return self.remark[:16]
+        return str(self.remark[:16]) + "..."
 
     def get_model_name(self, language="en"):
         if language.lower() == "en":

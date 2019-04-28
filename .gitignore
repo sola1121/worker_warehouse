@@ -124,3 +124,7 @@ dmypy.json
 
 # 忽略docs中的
 /docs/*
+
+# 忽略tmp中的
+/temp/*
+/tmp/*
