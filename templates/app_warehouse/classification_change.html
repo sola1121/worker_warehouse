@@ -8,7 +8,17 @@
 
 <div class="card">
     <div class="card-body">
-        
+
+                    
+        <div class="container w-25">
+            <form id="classificationAddForm">
+                {{ form.as_p }}
+                <button id="backend-add-confirm" type="button" class="btn btn-primary">确认保存</button>
+                <button id="backend-add-anothor" type="button" class="btn btn-primary">保存并添加另一个</button>
+                <a class="btn btn-info float-right" href="{% url 'warehouse:classification_home' %}">返回</a>
+            </form>
+        </div>
+
     </div>
 </div>
 
@@ -17,7 +27,49 @@
 
 {% block base_script %}
 <script>
+    window.onload= function(){
+        initThisPage.initButton()
+    }
 
+    var initThisPage = {
+        initButton: function(){buttonAddConfirm(); buttonAddAnother()}
+    }
+
+    function buttonAddConfirm(){
+        // 添加一个并返回浏览页
+        $("#backend-add-confirm").on("click", function(){
+            asyncPost("{% url 'warehouse:classification_home' %}")
+        })
+    }
+
+    function buttonAddAnother(){
+        // 添加一个依然保持在当前
+        $("#backend-add-anothor").on("click", function(){
+            asyncPost("{% url 'warehouse:classification_modify' %}")
+        })
+    }
+
+    function asyncPost(next_page){
+        $.post(
+            "{% url 'warehouse:classification_modify' %}",
+            {
+                "origin_class_name": getQueryString("className"), 
+                "class_name": $("#backend-className").val(), 
+                "remark": $("#backend-remark").val()
+            },
+            function(reback, status){
+                if (reback["back_msg"] == "OK"){
+                    window.alert("状态码" + status + "成功保存")
+                    if (next_page){
+                        window.location.href = next_page
+                    }
+                } else {
+                    window.alert("状态码" + status + "\n" + reback["back_msg"])
+                }
+            },
+            "json"
+        )
+    }
 
 </script>
 {% endblock %}

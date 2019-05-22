@@ -1,0 +1,202 @@
+{% extends "basements/base.html" %}
+
+{% block head_title %}供应商管理{% endblock %}
+
+{% block body %}
+{% include "basements/navbar_header.html" %}
+{% include "basements/navbar_content_1.html" %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4 col-sm-4">
+            <button type="button" id="backend-add" class="btn btn-primary"><i class="fa fa-plus-square"></i>添加物品分类</button>
+            <button type="button" id="backend-download" class="btn btn-primary"><i class="fa fa-download"></i>下载当前结果</button>
+        </div>
+        <div class="col-md-8 col-sm-8">
+            <div class="container-fluid">
+                {% include "forms/search_classification_form.html" %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>分类名</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contact in pagetor %}
+                    <tr>
+                        <th class="backend-num-id" scope="row"></th>
+                        <th>{{contact.class_name}}</th>
+                        <th class="backend-remark">
+                            {% if contact.remark %}
+                            <a href="#" data-toggle="popover" title="{{contact.remark}}"></a>
+                            {% endif %}
+                        </th>
+                        <th>
+                            <button type="button" class="btn btn-warning btn-sm backend-edit" data-toggle="tooltip" data-placement="bottom" value_id="{{contact.class_name}}" title="编辑内容"><i class="fa fa-edit"></i></button>
+                            <button type="button" class="btn btn-danger btn-sm backend-delete" data-toggle="tooltip" data-placement="bottom" value_id="{{contact.class_name}}" title="删除内容"><i class="fa fa-trash"></i></button>
+                        </th>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="float-left ml-3">
+    <small>总数据量: {{pagetor.paginator.count}}, 页数: {{pagetor.paginator.num_pages}}</small>
+</div>
+
+<nav class="float-right mr-3" aria-label="Page navigation">
+    <ul class="pagination">
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:classification_home' %}1/">&laquo;&laquo;</a></li>
+        {% if pagetor.has_previous %}
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:classification_home' %}{{pagetor.previous_page_number}}/">{{pagetor.previous_page_number}}</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{pagetor.number}}</span></li>
+        {% if pagetor.has_next %}
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:classification_home' %}{{pagetor.next_page_number}}/">{{pagetor.next_page_number}}</a></li>
+        {% endif %}
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:classification_home' %}{{pagetor.paginator.num_pages}}/">&raquo;&raquo;</a></li>
+    </ul>
+</nav>
+
+{% include "basements/navbar_content_2.html" %}
+{% endblock %}
+
+{% block base_script %}
+<script>
+    window.onload = function(){
+        thisPageInit.initButton()
+        thisPageInit.initContent()
+        thisPageInit.initPagination()
+    }
+
+    var thisPageInit = {
+        initButton: function (){buttonSearch(); buttonDownload(); buttonAdd(); buttonEdit(); buttonDelete()},
+        initContent: function(){itemNum(); remarkShotcut()},
+        initPagination: function(){paginationLink()},
+    }
+
+
+    function buttonSearch(){
+        // 搜索按钮功能赋予
+        $("#classificationSearch").on("click", function (evt) {
+            var class_name = $("#searchClassName").val()
+            window.location.href = "{% url 'warehouse:classification_home' %}1/?className=" + class_name
+        })
+    }
+    
+
+    function buttonDownload(){
+        // 文件下载功能
+        $("#backend-download").on("click", function(evt){
+            // TODO: 下面行可删除
+            window.alert("将进行文件下载, 筛选条件-" + getQueryString("className"))
+            var className = getQueryString("className")
+            var download_url = "{% url 'warehouse:classification_download' %}?className=" + className
+            var filename = (className) ? "物品分类 搜索名称_" + className + ".xlsx" : "物品分类.xlsx"
+            // 模拟下载, 仅htm5支持
+            var aElement = document.createElement('a')
+            aElement.setAttribute('href', download_url)
+            aElement.setAttribute('download', filename)
+            aElement.click()
+
+        })
+    }
+
+
+    function buttonAdd(){
+        // 添加按钮功能赋予
+        $("#backend-add").on("click", function(evt){
+            window.location.href = "{% url 'warehouse:classification_modify' %}"
+        })
+    }
+
+    
+    function buttonEdit(){
+        // 编辑按钮功能赋予
+        $(".backend-edit").on("click", function(evt){
+            var class_name = this.getAttribute("value_id")
+            window.location.href = "{% url 'warehouse:classification_modify' %}?className=" + class_name
+        })
+    }
+
+
+    function buttonDelete(){
+        // 删除按钮功能赋予
+        $(".backend-delete").on("click", function(evt){
+            var class_name = this.getAttribute("value_id")
+            var flag = window.confirm("确定删除分类" + class_name + "的内容么?")
+            if (!flag){return}
+            $.ajax({
+                url: "{% url 'warehouse:classification_delete' %}",
+                type: "post",
+                async: true,
+                dataType: "json",
+                data: {className: class_name},
+                success: function(reback){
+                    if (reback["back_msg"]== "OK"){
+                        window.location.reload()
+                    } else {
+                        window.alert(reback["back_msg"])
+                    }
+                }
+            })
+        })
+    }
+
+
+    function itemNum(){
+        // 内容编号
+        var number_ids = $(".backend-num-id")
+        for (var i=0; i<number_ids.length; i++){
+            number_ids[i].textContent = i+1
+        }
+    }
+
+
+    function remarkShotcut(){
+        // 备注截取
+        var remark_texts = $(".backend-remark").children()
+        if (remark_texts.length > 0){
+            for (var i=0; i<remark_texts.length; i++){
+                var obj_title = remark_texts[i].getAttribute("title")
+                if (obj_title.length > 8){
+                    remark_texts[i].textContent = obj_title.slice(0, 8) + "..."
+                } else {
+                    remark_texts[i].textContent = obj_title
+                }
+            }
+        }
+    }
+
+
+    function paginationLink(){
+        // 翻页带条件
+        var className = "{% if supplier_name %}{{supplier_name}}{% endif %}"
+        if (className){
+            if (className){
+                $("#searchClassName").val(className)
+            }
+            var page_items_a = $(".pagination>.page-item>a")
+            for(var i=0; i<page_items_a.length; i++){
+                var origin_href = page_items_a[i].getAttribute("href")
+                page_items_a[i].setAttribute("href", origin_href + "?className=" + className)
+            }
+        }
+    }
+
+</script>
+{% endblock %}

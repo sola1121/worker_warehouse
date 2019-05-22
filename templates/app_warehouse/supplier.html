@@ -13,9 +13,7 @@
             <button type="button" id="backend-download" class="btn btn-primary"><i class="fa fa-download"></i>下载当前结果</button>
         </div>
         <div class="col-md-8 col-sm-8">
-            <div class="container-fluid">
-                {% include "forms/search_supplier_form.html" %}
-            </div>
+            {% include "forms/search_supplier_form.html" %}
         </div>
     </div>
 </div>
@@ -103,20 +101,17 @@
     
 
     function buttonDownload(){
-        // TODO: 下载功能来一波
+        // 文件下载功能
         $("#backend-download").on("click", function(evt){
-            window.alert("将进行文件下载, 筛选条件-" + getQueryString("supplierId") + getQueryString("supplierName"))
             var supplierId = getQueryString("supplierId")
             var supplierName = getQueryString("supplierName")
             var download_url = "{% url 'warehouse:supplier_download' %}?supplierId=" + supplierId + "&supplierName=" + supplierName
             var filename = (supplierId || supplierName) ? "供应商 - 搜索编号_" + supplierId + ", 搜索名称_" + supplierName + ".xlsx" : "供应商.xlsx"
             // 模拟下载, 仅htm5支持
-            var aElement = document.createElement('a');
-
-            aElement.setAttribute('href', download_url);
-            aElement.setAttribute('download', filename);
-            aElement.click();
-
+            var aElement = document.createElement('a')
+            aElement.setAttribute('href', download_url)
+            aElement.setAttribute('download', filename)
+            aElement.click()
         })
     }
 
@@ -199,7 +194,6 @@
                 $("#searchSupplierName").val(supplierName)
             }
             var page_items_a = $(".pagination>.page-item>a")
-            console.log("原始的对象", page_items_a)
             for(var i=0; i<page_items_a.length; i++){
                 var origin_href = page_items_a[i].getAttribute("href")
                 page_items_a[i].setAttribute("href", origin_href + "?supplierId=" + supplierId + "&supplierName=" + supplierName)

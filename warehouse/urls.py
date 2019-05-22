@@ -1,6 +1,6 @@
 from django.urls import path, re_path
 
-from . import views
+from . import views, views_ware
 
 app_name = "warehouse"
 
@@ -13,5 +13,17 @@ urlpatterns = [
     path("supplier/download/", views.supplier_download, name="supplier_download"),
 
     # 物品分类管理
-    
+    path("classification/", views.classification, name="classification_home"),
+    re_path(r"classification/(?P<page>\d.*?)/", views.classification),
+    path("classification/modify/", views.classification_modify, name="classification_modify"),
+    path("classification/delete/", views.classification_delete, name="classification_delete"),
+    path("classification/download/", views.classification_download, name="classification_download"),
+
+    # 入库单管理
+
+    # 出库单管理
+
+    # 在库管理
+
+    # 销售单管理
 ]

@@ -16,14 +16,7 @@
     // 对于breadcrumb
     var new_element = document.createElement("li")
     new_element.setAttribute("class", "breadcrumb-item active")
-    switch (active_navbar){
-        case "index":
-            new_element.innerText = active_navbar
-            break
-        case "supplier":
-            new_element.innerText = active_navbar
-            break
-    }
+    new_element.innerText = active_navbar
     document.getElementById("backend-control-breadcrumb").appendChild(new_element)
 
     var admin_page = document.getElementById("nv-database")
