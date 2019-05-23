@@ -6,6 +6,7 @@ from .models import User
 
 # Create your views here.
 
+### 用户账户管理 ###
 
 def account_login(request):
     if request.user.is_authenticated:
@@ -52,3 +53,6 @@ def account_change_password(request):
         logout(request)
         return redirect("/")
     return render(request, "app_account/change_password.html")
+
+
+### 用户历史时间管理 ###

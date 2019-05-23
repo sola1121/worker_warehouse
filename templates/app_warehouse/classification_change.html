@@ -9,7 +9,7 @@
 <div class="card">
     <div class="card-body">
 
-                    
+{# 添加和修改, 物品种类 #}  
         <div class="container w-25">
             <form id="classificationAddForm">
                 {{ form.as_p }}
@@ -59,12 +59,12 @@
             },
             function(reback, status){
                 if (reback["back_msg"] == "OK"){
-                    window.alert("状态码" + status + "成功保存")
+                    window.alert("状态码 " + status + ", 成功保存")
                     if (next_page){
                         window.location.href = next_page
                     }
                 } else {
-                    window.alert("状态码" + status + "\n" + reback["back_msg"])
+                    window.alert("状态码 " + status + "\n" + reback["back_msg"])
                 }
             },
             "json"

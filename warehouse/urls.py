@@ -24,6 +24,8 @@ urlpatterns = [
     # 出库单管理
 
     # 在库管理
-
+    path("warehouse/", views_ware.warehouse, name="warehouse_home"),
+    re_path(r"warehouse/(?P<page>\d.*?)/", views_ware.warehouse),
+    
     # 销售单管理
 ]

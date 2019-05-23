@@ -7,6 +7,7 @@
 {% include "basements/navbar_content_1.html" %}
 
 <div class="container-fluid">
+{# 添加和保存按钮, 物品种类 #}
     <div class="row">
         <div class="col-md-4 col-sm-4">
             <button type="button" id="backend-add" class="btn btn-primary"><i class="fa fa-plus-square"></i>添加物品分类</button>
@@ -14,6 +15,7 @@
         </div>
         <div class="col-md-8 col-sm-8">
             <div class="container-fluid">
+{# 搜索表单, 物品种类 #}
                 {% include "forms/search_classification_form.html" %}
             </div>
         </div>
@@ -25,6 +27,7 @@
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
+{# 显示不同的列表, 种类显示 #}
                     <tr>
                         <th>#</th>
                         <th>分类名</th>
@@ -33,6 +36,7 @@
                     </tr>
                 </thead>
                 <tbody>
+{# 获取paginator中的数据, 种类显示 #}
                     {% for contact in pagetor %}
                     <tr>
                         <th class="backend-num-id" scope="row"></th>
@@ -59,6 +63,7 @@
 </div>
 
 <nav class="float-right mr-3" aria-label="Page navigation">
+{# 翻页按钮, 物品种类 #}
     <ul class="pagination">
         <li class="page-item"><a class="page-link" href="{% url 'warehouse:classification_home' %}1/">&laquo;&laquo;</a></li>
         {% if pagetor.has_previous %}

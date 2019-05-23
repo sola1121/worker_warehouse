@@ -7,15 +7,16 @@
 {% include "basements/navbar_content_1.html" %}
 
 <div class="container-fluid">
-{# 添加和保存按钮, 供应商 #}
+{# 添加和保存按钮, 在库不需要添加, 只有保存当前结果 #}
     <div class="row">
-        <div class="col-md-4 col-sm-4">
-            <button type="button" id="backend-add" class="btn btn-primary"><i class="fa fa-plus-square"></i>添加供应商</button>
+        <div class="col-md-2 col-sm-2">
             <button type="button" id="backend-download" class="btn btn-primary"><i class="fa fa-download"></i>下载当前结果</button>
         </div>
-        <div class="col-md-8 col-sm-8">
+        <div class="col-md-10 col-sm-10">
 {# 搜索表单, 搜索供应商 #}
-            {% include "forms/search_supplier_form.html" %}
+            <div class="row">
+                {% include "forms/search_warehouse_form.html" %}        
+            </div>
         </div>
     </div>
 </div>
@@ -28,8 +29,16 @@
                     <tr>
 {# 显示不同的列表, 供应商显示 #}
                         <th>#</th>
+                        <th>储物编号</th>
+                        <th>储物名称</th>
+                        <th>储物分类</th>
                         <th>供应商编号</th>
                         <th>供应商名字</th>
+                        <th>规格/型号</th>
+                        <th>计件单位</th>
+                        <th>储物数量</th>
+                        <th>总金额</th>
+                        <th>最近更新</th>
                         <th>备注</th>
                         <th>操作</th>
                     </tr>
@@ -47,8 +56,8 @@
                             {% endif %}
                         </th>
                         <th>
-                            <button type="button" class="btn btn-warning btn-sm backend-edit" data-toggle="tooltip" data-placement="bottom" value_id="{{contact.supplier_id}}" title="编辑内容"><i class="fa fa-edit"></i></button>
-                            <button type="button" class="btn btn-danger btn-sm backend-delete" data-toggle="tooltip" data-placement="bottom" value_id="{{contact.supplier_id}}" title="删除内容"><i class="fa fa-trash"></i></button>
+                            <button type="button" class="btn btn-warning btn-sm backend-edit" data-toggle="tooltip" data-placement="bottom" value_id="{{contact.good_id}}" title="编辑内容"><i class="fa fa-edit"></i></button>
+                            <button type="button" class="btn btn-danger btn-sm backend-delete" data-toggle="tooltip" data-placement="bottom" value_id="{{contact.good_id}}" title="删除内容"><i class="fa fa-trash"></i></button>
                         </th>
                     </tr>
                     {% endfor %}
@@ -65,15 +74,15 @@
 <nav class="float-right mr-3" aria-label="Page navigation">
 {# 翻页按钮, 供应商 #}
     <ul class="pagination">
-        <li class="page-item"><a class="page-link" href="{% url 'warehouse:supplier_home' %}1/">&laquo;&laquo;</a></li>
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:warehouse_home' %}1/">&laquo;&laquo;</a></li>
         {% if pagetor.has_previous %}
-        <li class="page-item"><a class="page-link" href="{% url 'warehouse:supplier_home' %}{{pagetor.previous_page_number}}/">{{pagetor.previous_page_number}}</a></li>
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:warehouse_home' %}{{pagetor.previous_page_number}}/">{{pagetor.previous_page_number}}</a></li>
         {% endif %}
         <li class="page-item active"><span class="page-link">{{pagetor.number}}</span></li>
         {% if pagetor.has_next %}
-        <li class="page-item"><a class="page-link" href="{% url 'warehouse:supplier_home' %}{{pagetor.next_page_number}}/">{{pagetor.next_page_number}}</a></li>
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:warehouse_home' %}{{pagetor.next_page_number}}/">{{pagetor.next_page_number}}</a></li>
         {% endif %}
-        <li class="page-item"><a class="page-link" href="{% url 'warehouse:supplier_home' %}{{pagetor.paginator.num_pages}}/">&raquo;&raquo;</a></li>
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:warehouse_home' %}{{pagetor.paginator.num_pages}}/">&raquo;&raquo;</a></li>
     </ul>
 </nav>
 
@@ -82,25 +91,53 @@
 
 {% block base_script %}
 <script>
+
     window.onload = function(){
+        thisPageInit.initInput()
         thisPageInit.initButton()
         thisPageInit.initContent()
         thisPageInit.initPagination()
     }
 
     var thisPageInit = {
-        initButton: function (){buttonSearch(); buttonDownload(); buttonAdd(); buttonEdit(); buttonDelete()},
+        initInput: function(){inputTime(); },
+        initButton: function(){buttonSearch(); buttonDownload();  buttonEdit(); buttonDelete()}, // buttonAdd() 禁止向已有的仓库中直接添加
         initContent: function(){itemNum(); remarkShotcut()},
         initPagination: function(){paginationLink()},
     }
 
+    function inputTime(){
+        // 搜索框日期显示初始化
+        var datepickerSetting = {
+            showMonthAfterYear:true, //年在前，月在后
+            yearSuffix:"年",	     //添加后缀年
+            prevText:"上一月",       //鼠标放在翻月按钮上显示的文字
+            nextText:"下一月",
+            monthNames:["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月",],   //以中文显示月份
+            dayNamesMin:["日","一","二","三","四","五","六",], //以中文显示每周（必须按此顺序，否则日期出错）
+            dateFormat:"yy-mm-dd",   //在文本框中显示日期的格式 
+        }
+        $("#searchWarehouseStartTime").datepicker(datepickerSetting)
+        $("#searchWarehouseEndTime").datepicker(datepickerSetting)
+    }
 
     function buttonSearch(){
         // 搜索按钮功能赋予
-        $("#supplierSearch").on("click", function (evt) {
-            var supplier_id = $("#searchSupplierId").val()
-            var supplier_name = $("#searchSupplierName").val()
-            window.location.href = "{% url 'warehouse:supplier_home' %}1/?supplierId=" + supplier_id + "&supplierName=" + supplier_name
+        $("#warehouseSearch").on("click", function (evt) {
+            var supplier_id = $("#searchWarehouseSupplierId").val()
+            var supplier_name = $("searchWarehouseSupplierName").val()
+            var good_id = $("#searchWarehouseId").val()
+            var good_name = $("#searchWarehouseName").val()
+            var class_name = $("#searchWarehouseClassName").val()
+            var start_time = $("#searchWarehouseStartTime").val()
+            var end_time = $("#searchWarehouseEndTime").val()
+            window.location.href = "{% url 'warehouse:warehouse_home' %}1/?supplierId=" + supplier_id 
+                                                                        + "&supplierName=" + supplier_name
+                                                                        + "&goodId=" + good_id
+                                                                        + "&goodName=" + good_name
+                                                                        + "&className=" + class_name
+                                                                        + "&startTime=" + start_time
+                                                                        + "&endTime=" + end_time
         })
     }
     
@@ -121,12 +158,12 @@
     }
 
 
-    function buttonAdd(){
-        // 添加按钮功能赋予
-        $("#backend-add").on("click", function(evt){
-            window.location.href = "{% url 'warehouse:supplier_modify' %}"
-        })
-    }
+    // function buttonAdd(){
+    //     // 添加按钮功能赋予
+    //     $("#backend-add").on("click", function(evt){
+    //         window.location.href = ""
+    //     })
+    // }
 
     
     function buttonEdit(){

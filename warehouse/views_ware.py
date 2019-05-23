@@ -10,3 +10,28 @@ from warehouse import models, forms
 
 OK = "OK"
 PER_PAGE = 10
+
+
+### 入库相关 ###
+
+### 出库相关 ###
+
+### 在库相关 ###
+
+def warehouse(request, page=1):
+    """在库货物显示与查询"""
+    return render(request, 
+                  "app_warehouse/warehouse.html",
+                  {"active_navbar": "warehouse",})
+
+
+def warehouse_modify(request):
+    pass
+
+
+def warehouse_delete(request):
+    pass
+
+
+def warehouse_download(request):
+    pass
