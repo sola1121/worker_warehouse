@@ -12,6 +12,7 @@ from warehouse import models
 faker_en = Faker(locale="en_US")
 faker_cn = Faker(locale="zh_CN")
 
+hit_describe = "数据库%s中已有%s 个数据, 期望达到%s, 将会生成%s"
 
 def choice_faker(rate_zh=0.6, rate_remark=0.7):
     fakers = list()
@@ -30,7 +31,7 @@ def choice_faker(rate_zh=0.6, rate_remark=0.7):
 
 def create_data_supplier(count=50):
     ready = models.Supplier.objects.count()
-    print("数据库Supplier中已有%s 个数据, 期望达到%s, 将会生成%s" % (ready, count, count-ready if ready<count else 0))
+    print(hit_describe % ("Supplier", ready, count, count-ready if ready<count else 0))
     if  ready < count:
         increase_num = count - ready
         while increase_num>0:
@@ -44,7 +45,7 @@ def create_data_supplier(count=50):
 
 def create_data_classification(count=30):
     ready = models.Classification.objects.count()
-    print("数据库Classification中已有%s 个数据, 期望达到%s, 将会生成%s" % (ready, count, count-ready if ready<count else 0))
+    print(hit_describe % ("Classification", ready, count, count-ready if ready<count else 0))
     if ready < count:
         increase_num = count - ready
         while increase_num>0:
@@ -56,6 +57,40 @@ def create_data_classification(count=30):
             increase_num -= 1
 
 
+def create_data_warehouse(count=40):
+    ready = models.Warehouse.objects.count()
+    print(hit_describe % ("Warehouse", ready, count, count-ready if ready<count else 0))
+    if ready < count:
+        increase_num = count - ready
+        while increase_num>0:
+            faker, create_remark = choice_faker()
+            new_classification = [pk[0] for pk in models.Classification.objects.filter(is_deleted=False).values_list("id")]
+            new_supplier = [pk[0] for pk in models.Supplier.objects.filter(is_deleted=False).values_list("id")]
+            new_data = models.Warehouse(
+                good_id=faker_en.ssn(),
+                good_name=faker.name(),
+                classification=models.Classification.objects.get(pk=random.choice(new_classification)),
+                supplier=models.Supplier.objects.get(pk=random.choice(new_supplier))
+            )
+            if create_remark:
+                new_data.remark = faker.text()
+            new_data.save()
+            increase_num -= 1
+
+
 if __name__ == "__main__":
 
-    create_data_classification()
+    # 进行数据的生成
+    # create_data_classification()
+    # create_data_warehouse()
+
+    # 在此下面进行数据的验证
+    class_obj = models.Classification.objects.filter(is_deleted=False, class_name__icontains="james")
+
+    print(class_obj)
+
+    ware_obj = models.Warehouse.objects.filter(
+        is_deleted=False,
+        supplier__supplier_id__icontians="3",
+        classification__class_name__icontains="李",
+    )

@@ -48,8 +48,16 @@
                     {% for contact in pagetor %}
                     <tr>
                         <th class="backend-num-id" scope="row"></th>
-                        <th>{{contact.supplier_id}}</th>
-                        <th>{{contact.supplier_name}}</th>
+                        <th>{{contact.good_id}}</th>
+                        <th>{{contact.good_name}}</th>
+                        <th>{{contact.classification.class_name}}</th>
+                        <th>{{contact.supplier.supplier_id}}</th>
+                        <th>{{contact.supplier.supplier_name}}</th>
+                        <th>{{contact.spec}}</th>
+                        <th>{{contact.unit}}</th>
+                        <th>{{contact.amount}}</th>
+                        <th>{{contact.price}}</th>
+                        <th>{{contact.update_date}}</th>
                         <th class="backend-remark">
                             {% if contact.remark %}
                             <a href="#" data-toggle="popover" title="{{contact.remark}}"></a>
@@ -228,17 +236,43 @@
         // 翻页带条件
         var supplierId = "{% if supplier_id %}{{supplier_id}}{% endif %}"
         var supplierName = "{% if supplier_name %}{{supplier_name}}{% endif %}"
-        if (supplierId || supplierName){
+        var goodId = "{% if good_id %}{{good_id}}{% endif %}"
+        var goodName = "{% if good_name %}{{good_name}}{% endif %}"
+        var className = "{% if class_name %}{{class_name}}{% endif %}"
+        var startTime = "{% if start_time %}{{start_time}}{% endif %}"
+        var endTime = "{% if end_time %}{{end_time}}{% endif %}"
+        if (supplierId || supplierName || goodId || goodName || className || startTime || endTime){
             if (supplierId){
-                $("#searchSupplierId").val(supplierId)
+                $("#searchWarehouseSupplierId").val(supplierId)
             }
             if (supplierName){
-                $("#searchSupplierName").val(supplierName)
+                $("#searchWarehouseSupplierName").val(supplierName)
+            }
+            if (goodId){
+                $("#searchWarehouseGoodId").val(goodId)
+            }
+            if (goodName){
+                $("#searchWarehouseGoodName").val(goodName)
+            }
+            if (className){
+                $("#searchWarehouseClassName").val(className)
+            }
+            if (startTime){
+                $("#searchWarehouseStartTime").val(startTime)
+            }
+            if (endTime){
+                $("#searchWarehouseEndTime").val(endTime)
             }
             var page_items_a = $(".pagination>.page-item>a")
             for(var i=0; i<page_items_a.length; i++){
                 var origin_href = page_items_a[i].getAttribute("href")
-                page_items_a[i].setAttribute("href", origin_href + "?supplierId=" + supplierId + "&supplierName=" + supplierName)
+                page_items_a[i].setAttribute("href", origin_href + "?supplierId=" + supplierId
+                                                                    + "&supplierName=" + supplierName
+                                                                    + "&goodId=" + goodId
+                                                                    + "&goodName=" + goodName
+                                                                    + "&className=" + className
+                                                                    + "&startTime=" + startTime
+                                                                    + "&endTime=" + endTime)
             }
         }
     }
