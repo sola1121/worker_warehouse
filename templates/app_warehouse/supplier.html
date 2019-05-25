@@ -43,7 +43,7 @@
                         <th>{{contact.supplier_name}}</th>
                         <th class="backend-remark">
                             {% if contact.remark %}
-                            <a href="#" data-toggle="popover" title="{{contact.remark}}"></a>
+                            <a href="#" onclick="remarkModal(this)" data-toggle="popover" modal-title="{{contact.supplier_id}}" title="{{contact.remark}}"></a>
                             {% endif %}
                         </th>
                         <th>
@@ -54,6 +54,23 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="remarkModalMessages" tabindex="-1" role="dialog" aria-labelledby="remarkModalMessages" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="remarkModalMessagesTitle">...</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body" id="remarkModalMessagesBody">
+                <div class="text-danger">Error</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">关闭</button>
+            </div>
         </div>
     </div>
 </div>
@@ -186,6 +203,12 @@
         }
     }
 
+    function remarkModal(obj){
+        // 备注Modal
+        $("#remarkModalMessagesTitle").html(obj.getAttribute("modal-title") + " - 备注内容")
+        $("#remarkModalMessagesBody").html(obj.getAttribute("title"))
+        $("#remarkModalMessages").modal("show")
+    }
 
     function paginationLink(){
         // 翻页带条件

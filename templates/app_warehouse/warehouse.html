@@ -1,6 +1,6 @@
 {% extends "basements/base.html" %}
 
-{% block head_title %}供应商管理{% endblock %}
+{% block head_title %}储物管理{% endblock %}
 
 {% block body %}
 {% include "basements/navbar_header.html" %}
@@ -60,7 +60,7 @@
                         <th>{{contact.update_date}}</th>
                         <th class="backend-remark">
                             {% if contact.remark %}
-                            <a href="#" data-toggle="popover" title="{{contact.remark}}"></a>
+                            <a href="#" onclick="remarkModal(this)" data-toggle="popover" modal-title="{{contact.good_id}}" title="{{contact.remark}}"></a>
                             {% endif %}
                         </th>
                         <th>
@@ -71,6 +71,23 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="remarkModalMessages" tabindex="-1" role="dialog" aria-labelledby="remarkModalMessages" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="remarkModalMessagesTitle">...</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body" id="remarkModalMessagesBody">
+                <div class="text-danger">Error</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">关闭</button>
+            </div>
         </div>
     </div>
 </div>
@@ -133,7 +150,7 @@
         // 搜索按钮功能赋予
         $("#warehouseSearch").on("click", function (evt) {
             var supplier_id = $("#searchWarehouseSupplierId").val()
-            var supplier_name = $("searchWarehouseSupplierName").val()
+            var supplier_name = $("#searchWarehouseSupplierName").val()
             var good_id = $("#searchWarehouseId").val()
             var good_name = $("#searchWarehouseName").val()
             var class_name = $("#searchWarehouseClassName").val()
@@ -153,6 +170,7 @@
     function buttonDownload(){
         // 文件下载功能
         $("#backend-download").on("click", function(evt){
+            // TODO: 这里要改下载请求
             var supplierId = getQueryString("supplierId")
             var supplierName = getQueryString("supplierName")
             var download_url = "{% url 'warehouse:supplier_download' %}?supplierId=" + supplierId + "&supplierName=" + supplierName
@@ -176,6 +194,7 @@
     
     function buttonEdit(){
         // 编辑按钮功能赋予
+        // TODO: 这里要改编辑的请求
         $(".backend-edit").on("click", function(evt){
             var supplier_id = this.getAttribute("value_id")
             window.location.href = "{% url 'warehouse:supplier_modify' %}?supplierId=" + supplier_id 
@@ -185,6 +204,7 @@
 
     function buttonDelete(){
         // 删除按钮功能赋予
+        // TODO:　这里要给删除的指向请求
         $(".backend-delete").on("click", function(evt){
             var supplier_id = this.getAttribute("value_id")
             var flag = window.confirm("确定删除编号" + supplier_id + "的内容么?")
@@ -231,6 +251,12 @@
         }
     }
 
+    function remarkModal(obj){
+        // 备注Modal
+        $("#remarkModalMessagesTitle").html(obj.getAttribute("modal-title") + " - 备注内容")
+        $("#remarkModalMessagesBody").html(obj.getAttribute("title"))
+        $("#remarkModalMessages").modal("show")
+    }
 
     function paginationLink(){
         // 翻页带条件

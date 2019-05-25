@@ -1,5 +1,7 @@
 import datetime
+import logging
 
+import pytz
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 from django.shortcuts import render, redirect, get_object_or_404
@@ -11,6 +13,7 @@ from warehouse import models, forms
 # Create your views here.
 
 OK = "OK"
+TZ = pytz.timezone("Asia/Shanghai")
 PER_PAGE = 10
 
 class RequestQueryHandler:
@@ -20,26 +23,29 @@ class RequestQueryHandler:
         self.good_id = request.GET.get("goodId", '')
         self.good_name = request.GET.get("goodName", '')
         self.class_name = request.GET.get("className", '')
-        self.time_deal(request)
+        self._time_deal(request)
     
-    def time_deal(self, request):
+    def _time_deal(self, request):
         start_time = request.GET.get("startTime", '')
         end_time = request.GET.get("endTime", '')
         self.origin_start_time, self.origin_end_time = start_time, end_time
         try:
             if start_time:
-                self.start_time = datetime.datetime.strptime(start_time, "%Y-%m-%d")
+                trans_time = datetime.datetime.strptime(start_time, "%Y-%m-%d") - datetime.timedelta(days=1)
+                self.start_time = datetime.datetime(trans_time.year, trans_time.month, trans_time.day, tzinfo=TZ)
             else:
-                self.start_time = datetime.datetime(1970, 1, 1, 0, 0)
+                self.start_time = datetime.datetime(1970, 1, 1, 0, 0, tzinfo=TZ)
             if end_time:
-                self.end_time = datetime.datetime.strptime(end_time, "%Y-%m-%d")
+                trans_time = datetime.datetime.strptime(end_time, "%Y-%m-%d") + datetime.timedelta(days=1)
+                self.end_time = datetime.datetime(trans_time.year, trans_time.month, trans_time.day, tzinfo=TZ)
             else:
-                self.end_time = datetime.datetime.now()
+                self.end_time = datetime.datetime.now(TZ)
             if start_time and end_time:
                 if self.start_time > self.end_time:
                     self.start_time, self.end_time = self.end_time, self.start_time
-        except:
-            raise Http404
+        except Exception as ex:
+            logging.error(ex)
+            return render(request, "exceptions/500.html", status=500)
 
 ### 入库相关 ###
 
@@ -62,7 +68,6 @@ def warehouse(request, page=1):
                                                  good_name__icontains=good_name,
                                                  update_date__gte=start_time,
                                                  update_date__lte=end_time)
-    # warehouses = models.Warehouse.objects.all()
     paginator = Paginator(warehouses.order_by("update_date"), PER_PAGE)
     if int(page) not in list(paginator.page_range):
         return redirect("/warehouse/warehouse/")

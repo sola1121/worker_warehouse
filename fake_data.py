@@ -1,5 +1,6 @@
 import os
 import random
+import datetime
 
 import django
 from faker import Faker
@@ -57,6 +58,14 @@ def create_data_classification(count=30):
             increase_num -= 1
 
 
+def create_data_InWarehouse(count=20):
+    pass
+
+
+def create_data_OutWarehouse(count=20):
+    pass
+
+
 def create_data_warehouse(count=40):
     ready = models.Warehouse.objects.count()
     print(hit_describe % ("Warehouse", ready, count, count-ready if ready<count else 0))
@@ -80,17 +89,27 @@ def create_data_warehouse(count=40):
 
 if __name__ == "__main__":
 
+    import time
+    import pytz
+
+    TZ = pytz.timezone("Asia/Shanghai")
     # 进行数据的生成
     # create_data_classification()
-    # create_data_warehouse()
+    create_data_warehouse(60)
 
     # 在此下面进行数据的验证
     class_obj = models.Classification.objects.filter(is_deleted=False, class_name__icontains="james")
+    # print(class_obj)
 
-    print(class_obj)
+    # dt_time = datetime.datetime(*[int(i) for i in 时间.strip().split("-")], tzinfo=TZ)
+    # dt_time = datetime.datetime(*(time.strptime("2019-05-25", "%Y-%m-%d")[0:6]), tzinfo=TZ)
+    # print(dt_time)
 
-    ware_obj = models.Warehouse.objects.filter(
-        is_deleted=False,
-        supplier__supplier_id__icontians="3",
-        classification__class_name__icontains="李",
-    )
+    # ware_obj = models.Warehouse.objects.filter(
+    #     is_deleted=False,
+    #     supplier__supplier_id__icontains="3",
+    #     classification__class_name__icontains="李",
+    #     update_date__lte=dt_time
+    # )
+
+    # print(ware_obj)
