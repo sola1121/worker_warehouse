@@ -10,7 +10,7 @@
     <div class="card-body">
 
 {# 添加和修改表单, 供应商 #}
-        <div class="container w-25">
+        <div class="container w-30">
             <form id="supplierAddForm">
                 {{ form.as_p }}
                 <button id="backend-add-confirm" type="button" class="btn btn-primary">确认保存</button>
@@ -65,7 +65,7 @@
                         window.location.href = next_page
                     }
                 } else {
-                    window.alert("状态码 " + status + "\n" + reback["back_msg"])
+                    window.alert("通信状态" + status + " 但是出现错误.\n" + reback["back_msg"])
                 }
             },
             "json"

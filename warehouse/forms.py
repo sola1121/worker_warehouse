@@ -1,4 +1,4 @@
-from django.forms import ModelForm, TextInput, Textarea
+from django.forms import ModelForm, TextInput, Textarea, Select, NumberInput
 
 from . import models
 
@@ -24,10 +24,46 @@ class ClassificationForm(ModelForm):
         model = models.Classification
         fields = ["class_name", "remark"]
         labels = {
-                "class_name": "物品分类名",
-                "remark": "备注"
+            "class_name": "物品分类名",
+            "remark": "备注"
         }
         widgets = {
             "class_name": TextInput(attrs={"id": "backend-className", "class": "form-control"}),
+            "remark": Textarea(attrs={"id": "backend-remark", "class": "form-control"}),
+        }
+
+
+class InWarehouseForm(ModelForm):
+    pass
+
+
+class OutWarehouseForm(ModelForm):
+    pass
+
+
+class WarehouseForm(ModelForm):
+    class Meta:
+        model = models.Warehouse
+        fields = ["good_id", "good_name", "classification", "supplier", "spec", "unit", "amount", "price", "remark"]
+        labels = {
+            "good_id": "储物编号",
+            "good_name": "储物名称",
+            "classification": "储物分类",
+            "supplier": "供应商",
+            "spec": "规格/型号",
+            "unit": "计件单位",
+            "amount": "数量",
+            "price": "总金额",
+            "remark": "备注" 
+        }
+        widgets = {
+            "good_id": TextInput(attrs={"id": "backend-goodId", "class": "form-control"}),
+            "good_name": TextInput(attrs={"id": "backend-goodName", "class": "form-control"}),
+            "classification": Select(attrs={"id": "backend-classification", "class": "form-control"}),
+            "supplier": Select(attrs={"id": "backend-supplier", "class": "form-control"}),
+            "spec": TextInput(attrs={"id": "backend-spec", "class": "form-control"}),
+            "unit": TextInput(attrs={"id": "backend-unit", "class": "form-control"}),
+            "amount": NumberInput(attrs={"id": "backend-amount", "class": "form-control"}),
+            "price": NumberInput(attrs={"id": "backend-price", "class": "form-control"}),
             "remark": Textarea(attrs={"id": "backend-remark", "class": "form-control"}),
         }

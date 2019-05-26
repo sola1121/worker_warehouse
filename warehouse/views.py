@@ -1,3 +1,7 @@
+import datetime
+import logging
+
+import pytz
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 from django.shortcuts import render, redirect, get_object_or_404
@@ -9,6 +13,7 @@ from warehouse import models, forms
 # Create your views here.
 
 OK = "OK"
+TZ = pytz.timezone("Asia/Shanghai")
 PER_PAGE = 10
 
 ### 供应商相关 ###
@@ -44,8 +49,14 @@ def supplier_modify(request):
         origin_supplier_id = request.POST.get("origin_supplier_id", '')
         if origin_supplier_id:
             try:
+                change_supplier_id = request.POST.get("supplier_id")
+                is_exsit_supplier = models.Supplier.objects.filter(supplier_id=change_supplier_id).exists()
+                if is_exsit_supplier:
+                    raise AssertionError("supplier objects with %s has already existed." % change_supplier_id)
                 origin_supplier = models.Supplier.objects.get(supplier_id=origin_supplier_id)
                 origin_supplier.delete()
+            except AssertionError:
+                return JsonResponse({"back_msg": "%s 供应商编号已存在."%change_supplier_id})
             except:
                 return JsonResponse({"back_msg": "源数据取出失败."})
         form = forms.SupplierForm(request.POST)
@@ -71,6 +82,7 @@ def supplier_delete(request):
     except:
         return JsonResponse({"back_msg": "数据库出错, 未能正确删除内容."})
     supplier.is_deleted = True
+    supplier.supplier_id = str(supplier.supplier_id) + "(DELETE%s)"%datetime.datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S %f")   # 避免删除后对添加或修改会有唯一性冲突
     supplier.save()
     # TODO: 应该向history中存入记录
     return JsonResponse({"back_msg": OK})
@@ -126,8 +138,14 @@ def classification_modify(request):
         origin_class_name = request.POST.get("origin_class_name", '')
         if origin_class_name:
             try:
+                change_class_name = request.POST.get("class_name")
+                is_exist_classification = models.Classification.objects.filter(class_name=change_class_name).exists()
+                if is_exist_classification:
+                    raise AssertionError("classification objects with %s has aready existed.")
                 origin_classification = models.Classification.objects.get(class_name=origin_class_name)
                 origin_classification.delete()
+            except AssertionError:
+                return JsonResponse({"back_msg": "%s 种类名已存在."%change_class_name})
             except:
                 return JsonResponse({"back_msg": "源数据取出失败."})
         form = forms.ClassificationForm(request.POST)
@@ -149,10 +167,12 @@ def classification_delete(request):
     """物品分类删除"""
     class_name = request.POST.get("className", '')
     try:
-        classification = models.classification.objects.get(class_name=class_name)
-    except:
+        classification = models.Classification.objects.get(class_name=class_name)
+    except Exception as er:
+        logging.error(er)
         return JsonResponse({"back_msg": "数据库出错, 未能正确删除内容."})
     classification.is_deleted = True
+    classification.class_name = str(classification.class_name) + "(DELETE%s)"%datetime.datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S %f")   # 避免删除后对添加或修改内容时会有唯一性冲突
     classification.save()
     # TODO: 应该向history中存入记录
     return JsonResponse({"back_msg": OK})

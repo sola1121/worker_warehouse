@@ -17,6 +17,7 @@ TZ = pytz.timezone("Asia/Shanghai")
 PER_PAGE = 10
 
 class RequestQueryHandler:
+    """处理GET请求参数"""
     def __init__(self, request):
         self.supplier_id = request.GET.get("supplierId", '')
         self.supplier_name = request.GET.get("supplierName", '')
@@ -86,12 +87,78 @@ def warehouse(request, page=1):
 
 
 def warehouse_modify(request):
-    pass
+    """在库货物添加和修改"""
+    good_id = request.GET.get("goodId", '')
+    form = forms.WarehouseForm()
+    if good_id:
+        warehouse = get_object_or_404(models.Warehouse, good_id=good_id)
+        form = forms.WarehouseForm(instance=warehouse)
+
+    if request.method == "POST":
+        origin_good_id = request.POST.get("origin_good_id", '')
+        if origin_good_id:
+            try:
+                change_good_id = request.POST.get("good_id")
+                is_exist_warehouse = models.Warehouse.objects.filter(good_id=change_good_id).exists()
+                if is_exist_warehouse:
+                    raise AssertionError("warehouse objetcts with %s has aready existed."%change_good_id)
+                origin_warehouse = models.Warehouse.objects.get(good_id=good_id)
+                print(origin_warehouse)
+                # origin_warehouse.delete()
+            except AssertionError:
+                return JsonResponse({"back_msg": "%s 储物编号已经存在."})
+            except:
+                return JsonResponse({"back_msg": "源数据取出失败."})
+        else:
+            return JsonResponse({"back_msg": "未获取到储物编号"})   # 确保必须要有原始的储物数据
+        # TODO: 删除, 要看看select的widget的返回的value是啥
+        print(request.POST.get("supplier"))
+        print(request.POST.get("classification"))
+        form = forms.WarehouseForm(request.POST)
+        if form.is_valid():
+            # form.save()
+            print("这里需要验证一下\n", form)
+            # TODO: 应该向history中存入记录
+            return JsonResponse({"back_msg": OK})
+        else:
+            return JsonResponse({"back_msg": form.errors.get_json_data(escape_html=True)})
+
+    return render(request, 
+                  "app_warehouse/warehouse_change.html", 
+                  {"head_title": "编辑在库货物",
+                   "active_navbar": "warehouse",
+                   "form": form})
 
 
 def warehouse_delete(request):
-    pass
+    """储物删除"""
+    supplier_id = request.POST.get("supplierId", '')
+    try:
+        supplier = models.Supplier.objects.get(supplier_id=supplier_id)
+    except:
+        return JsonResponse({"back_msg": "数据库出错, 未能正确删除内容."})
+    supplier.is_deleted = True
+    supplier.supplier_id = str(supplier.supplier_id) + "(DELETE%s)"%datetime.datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S %f")   # 避免删除后对添加或修改会有唯一性冲突
+    supplier.save()
+    # TODO: 应该向history中存入记录
+    return JsonResponse({"back_msg": OK})
 
 
 def warehouse_download(request):
-    pass
+    """下载查询结果"""
+    supplier_id = request.GET.get("supplierId", '')
+    supplier_name = request.GET.get("supplierName", '')
+    suppliers = models.Supplier.objects.filter(is_deleted=False, 
+                                               supplier_id__icontains=supplier_id, 
+                                               supplier_name__icontains=supplier_name)
+    filename = "供应商 - 搜索编号_%s, 搜索名称_%s.xlsx" % (supplier_id, supplier_name) if any((supplier_id, supplier_name)) else "供应商.xlsx"
+    file_wb = Workbook()
+    file_sheet = file_wb.get_sheet_by_name(file_wb.sheetnames[0])
+    file_sheet.title = "供应商"
+    file_sheet.append(["供应商编号", "供应商名称", "备注"])
+    for info in suppliers.values():
+        file_sheet.append([info["supplier_id"], info["supplier_name"], info["remark"].replace('\n', '').replace('\r', '')])
+    response = HttpResponse(save_virtual_workbook(file_wb))
+    response["Content-Type"] = "application/vnd.ms-excel"
+    response["Content-Disposition"] = "attachment;filename=\"%s\"" % filename
+    return response

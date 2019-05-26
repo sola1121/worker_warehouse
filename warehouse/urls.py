@@ -26,6 +26,8 @@ urlpatterns = [
     # 在库管理
     path("warehouse/", views_ware.warehouse, name="warehouse_home"),
     re_path(r"warehouse/(?P<page>\d.*?)/", views_ware.warehouse),
-    
+    path("warehouse/modify/", views_ware.warehouse_modify, name="warehouse_modify"),
+    path("warehouse/delete/", views_ware.warehouse_delete, name="warehouse_delete"),
+    path("warehouse/download/", views_ware.warehouse_download, name="warehouse_download"),
     # 销售单管理
 ]

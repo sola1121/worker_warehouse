@@ -9,13 +9,12 @@
 <div class="card">
     <div class="card-body">
 
-{# 添加和修改, 物品种类 #}  
-        <div class="container w-30">
-            <form id="classificationAddForm">
+{# 添加和修改表单, 在库货物 #}
+        <div class="container w-35">
+            <form id="warehouseAddForm">
                 {{ form.as_p }}
                 <button id="backend-add-confirm" type="button" class="btn btn-primary">确认保存</button>
-                <button id="backend-add-anothor" type="button" class="btn btn-primary">保存并添加另一个</button>
-                <a class="btn btn-info float-right" href="{% url 'warehouse:classification_home' %}">返回</a>
+                <a class="btn btn-info float-right" href="{% url 'warehouse:warehouse_home' %}">返回</a>
             </form>
         </div>
 
@@ -38,23 +37,30 @@
     function buttonAddConfirm(){
         // 添加一个并返回浏览页
         $("#backend-add-confirm").on("click", function(){
-            asyncPost("{% url 'warehouse:classification_home' %}")
+            asyncPost("{% url 'warehouse:warehouse_home' %}")
         })
     }
 
-    function buttonAddAnother(){
-        // 添加一个依然保持在当前
-        $("#backend-add-anothor").on("click", function(){
-            asyncPost("{% url 'warehouse:classification_modify' %}")
-        })
-    }
+    //function buttonAddAnother(){
+    //    // 添加一个依然保持在当前
+    //    $("#backend-add-anothor").on("click", function(){
+    //        asyncPost("{% url 'warehouse:warehouse_modify' %}")
+    //    })
+    //}
 
     function asyncPost(next_page){
         $.post(
-            "{% url 'warehouse:classification_modify' %}",
+            "{% url 'warehouse:warehouse_modify' %}",
             {
-                "origin_class_name": getQueryString("className"), 
-                "class_name": $("#backend-className").val(), 
+                "origin_good_id": getQueryString("goodId"), 
+                "good_id": $("#backend-goodId").val(), 
+                "good_name": $("#backend-goodName").val(), 
+                "classification": $("#backend-classification").val(),
+                "supplier": $("#backend-supplier").val(),
+                "spec": $("#backend-spec").val(),
+                "unit": $("#backend-unit").val(),
+                "amount": $("#backend-amount").val(),
+                "price": $("#backend-price").val(),
                 "remark": $("#backend-remark").val()
             },
             function(reback, status){

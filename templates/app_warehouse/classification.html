@@ -1,6 +1,6 @@
 {% extends "basements/base.html" %}
 
-{% block head_title %}供应商管理{% endblock %}
+{% block head_title %}分类管理{% endblock %}
 
 {% block body %}
 {% include "basements/navbar_header.html" %}
@@ -213,7 +213,7 @@
 
     function paginationLink(){
         // 翻页带条件
-        var className = "{% if supplier_name %}{{supplier_name}}{% endif %}"
+        var className = "{% if class_name %}{{class_name}}{% endif %}"
         if (className){
             if (className){
                 $("#searchClassName").val(className)

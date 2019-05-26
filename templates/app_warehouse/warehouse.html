@@ -195,10 +195,9 @@
     
     function buttonEdit(){
         // 编辑按钮功能赋予
-        // TODO: 这里要改编辑的请求
         $(".backend-edit").on("click", function(evt){
-            var supplier_id = this.getAttribute("value_id")
-            window.location.href = "{% url 'warehouse:supplier_modify' %}?supplierId=" + supplier_id 
+            var good_id = this.getAttribute("value_id")
+            window.location.href = "{% url 'warehouse:warehouse_modify' %}?goodId=" + good_id
         })
     }
 
