@@ -31,11 +31,12 @@ $.ajaxSetup({
 });
 
 
-function getQueryString(name, return_none=''){
-    var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i')
-    var r = window.location.search.substr(1).match(reg)
-    if (r != null){
-        return unescape(r[2])
+function getQueryString(name){
+    var urlQuery = window.location.search;
+    var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+    var result = urlQuery.substr(1).match(reg);
+    if (result != null && result != undefined){
+        return unescape(decodeURIComponent(result[2]));
     }
-    return ''
+    return '';
 }
