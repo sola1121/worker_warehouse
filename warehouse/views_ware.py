@@ -95,29 +95,29 @@ def warehouse_modify(request):
         form = forms.WarehouseForm(instance=warehouse)
 
     if request.method == "POST":
+        pk_id = None   # 保留更改对象的pk, 以免关联的表出错
         origin_good_id = request.POST.get("origin_good_id", '')
         if origin_good_id:
             try:
                 change_good_id = request.POST.get("good_id")
-                is_exist_warehouse = models.Warehouse.objects.filter(good_id=change_good_id).exists()
-                if is_exist_warehouse:
-                    raise AssertionError("warehouse objetcts with %s has aready existed."%change_good_id)
-                origin_warehouse = models.Warehouse.objects.get(good_id=good_id)
-                print(origin_warehouse)
-                # origin_warehouse.delete()
+                if origin_good_id != change_good_id:
+                    is_exist_warehouse = models.Warehouse.objects.filter(good_id=change_good_id).exists()   # 保证不和数据库中已有唯一冲突
+                    if is_exist_warehouse:
+                        raise AssertionError("warehouse objetcts with %s has aready existed."%change_good_id)
+                origin_warehouse = models.Warehouse.objects.get(good_id=origin_good_id)
+                pk_id = origin_warehouse.id
+                origin_warehouse.delete()
             except AssertionError:
-                return JsonResponse({"back_msg": "%s 储物编号已经存在."})
-            except:
+                return JsonResponse({"back_msg": "%s 储物编号已经存在."%change_good_id})
+            except Exception:
                 return JsonResponse({"back_msg": "源数据取出失败."})
         else:
-            return JsonResponse({"back_msg": "未获取到储物编号"})   # 确保必须要有原始的储物数据
-        # TODO: 删除, 要看看select的widget的返回的value是啥
-        print(request.POST.get("supplier"))
-        print(request.POST.get("classification"))
+            return JsonResponse({"back_msg": "未获取到储物编号."})   # 确保必须要有原始的储物数据
         form = forms.WarehouseForm(request.POST)
         if form.is_valid():
-            # form.save()
-            print("这里需要验证一下\n", form)
+            new_warehouse = form.save(commit=False)
+            new_warehouse.id = pk_id
+            new_warehouse.save()
             # TODO: 应该向history中存入记录
             return JsonResponse({"back_msg": OK})
         else:
@@ -132,32 +132,43 @@ def warehouse_modify(request):
 
 def warehouse_delete(request):
     """储物删除"""
-    supplier_id = request.POST.get("supplierId", '')
+    good_id = request.POST.get("goodId", '')
     try:
-        supplier = models.Supplier.objects.get(supplier_id=supplier_id)
+        warehouse = models.Warehouse.objects.get(good_id=good_id)
     except:
         return JsonResponse({"back_msg": "数据库出错, 未能正确删除内容."})
-    supplier.is_deleted = True
-    supplier.supplier_id = str(supplier.supplier_id) + "(DELETE%s)"%datetime.datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S %f")   # 避免删除后对添加或修改会有唯一性冲突
-    supplier.save()
+    warehouse.is_deleted = True
+    warehouse.good_id = str(warehouse.supplier_id) + "(DELETED %s)"%datetime.datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S %f")   # 避免删除后对添加或修改会有唯一性冲突
+    warehouse.save()
     # TODO: 应该向history中存入记录
     return JsonResponse({"back_msg": OK})
 
 
 def warehouse_download(request):
     """下载查询结果"""
-    supplier_id = request.GET.get("supplierId", '')
-    supplier_name = request.GET.get("supplierName", '')
-    suppliers = models.Supplier.objects.filter(is_deleted=False, 
-                                               supplier_id__icontains=supplier_id, 
-                                               supplier_name__icontains=supplier_name)
-    filename = "供应商 - 搜索编号_%s, 搜索名称_%s.xlsx" % (supplier_id, supplier_name) if any((supplier_id, supplier_name)) else "供应商.xlsx"
+    request_query = RequestQueryHandler(request)
+    supplier_id, supplier_name = request_query.supplier_id, request_query.supplier_name
+    good_id, good_name = request_query.good_id, request_query.good_name
+    class_name = request_query.class_name
+    start_time, end_time = request_query.start_time, request_query.end_time
+    warehouses = models.Warehouse.objects.filter(is_deleted=False,
+                                                 supplier__supplier_id__icontains=supplier_id,
+                                                 supplier__supplier_name__icontains=supplier_name,
+                                                 classification__class_name__icontains=class_name,
+                                                 good_id__icontains=good_id,
+                                                 good_name__icontains=good_name,
+                                                 update_date__gte=start_time,
+                                                 update_date__lte=end_time)
+    filename = "储物库 - 编号_%s, 名称_%s, 分类_%s, 供应编号_%s, 供应商名_%s, 时间区间(%s, %s).xlsx" \
+               % (good_id, good_name, class_name, supplier_id, supplier_name, start_time, end_time) \
+                 if any((good_id, good_name, class_name, supplier_id, supplier_name, start_time, end_time)) else "储物库.xlsx"
     file_wb = Workbook()
     file_sheet = file_wb.get_sheet_by_name(file_wb.sheetnames[0])
-    file_sheet.title = "供应商"
-    file_sheet.append(["供应商编号", "供应商名称", "备注"])
-    for info in suppliers.values():
-        file_sheet.append([info["supplier_id"], info["supplier_name"], info["remark"].replace('\n', '').replace('\r', '')])
+    file_sheet.title = "储物库"
+    file_sheet.append(["储物编号", "储物名称", "储物分类", "供应商编号", "供应商名称", "规格/型号", "计件单位", "储物数量", "总金额", "备注"])
+    for info in warehouses:
+        file_sheet.append([info.good_id, info.good_name, info.classification.class_name, info.supplier.supplier_id, info.supplier.supplier_name, 
+                           info.spec, info.unit, info.amount, info.price, str(info.remark).replace('\n', '').replace('\r', '') if info.remark else ''])
     response = HttpResponse(save_virtual_workbook(file_wb))
     response["Content-Type"] = "application/vnd.ms-excel"
     response["Content-Disposition"] = "attachment;filename=\"%s\"" % filename

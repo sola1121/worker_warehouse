@@ -2,7 +2,8 @@
 
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -24,24 +25,26 @@
     <!-- JQueryUI css -->
     <link rel="stylesheet" href="{%static 'vendor/jquery-ui/jquery-ui.min.css' %}">
     <!--[if lt IE 9]-->
-      <script src="{%static 'js/html5shiv.min.js' %}"></script>
-      <script src="{%static 'js/respond.min.js' %}"></script>
+    <script src="{%static 'js/html5shiv.min.js' %}"></script>
+    <script src="{%static 'js/respond.min.js' %}"></script>
     {% block base_style %}{% endblock %}
-  </head>
-  <body>
-    {% block body %}{% endblock %}    
+</head>
+
+<body>
+    {% block body %}{% endblock %}
     <!-- JavaScript files-->
     <script src="{%static 'vendor/jquery/jquery.min.js' %}"></script>
     <script src="{%static 'vendor/popper.js/umd/popper.min.js' %}"> </script>
     <script src="{%static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
     <script src="{%static 'vendor/jquery.cookie/jquery.cookie.js' %}"> </script>
-    <script src="{%static 'vendor/chart.js/Chart.min.js' %}"></script>
+    <script src="{%static 'vendor/echarts.js/echarts.min.js' %}"></script>
     <script src="{%static 'vendor/jquery-validation/jquery.validate.min.js' %}"></script>
     <script src="{%static 'vendor/jquery-ui/jquery-ui.min.js' %}"></script>
     <!-- Main File-->
     <script src="{%static 'js/front.js' %}"></script>
-  </body>
+</body>
 {# 自定义工具集 #}
 <script src="{% static 'js/common_tools.js' %}"></script>
 {% block base_script %}{% endblock %}
+
 </html>

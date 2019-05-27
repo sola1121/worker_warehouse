@@ -46,14 +46,17 @@ def supplier_modify(request):
         form = forms.SupplierForm(instance=supplier)
 
     if request.method == "POST":
+        pk_id = None   # 保留对象的pk, 以免关联的表出错
         origin_supplier_id = request.POST.get("origin_supplier_id", '')
         if origin_supplier_id:
             try:
                 change_supplier_id = request.POST.get("supplier_id")
-                is_exsit_supplier = models.Supplier.objects.filter(supplier_id=change_supplier_id).exists()
-                if is_exsit_supplier:
-                    raise AssertionError("supplier objects with %s has already existed." % change_supplier_id)
+                if origin_supplier_id != change_supplier_id:
+                    is_exsit_supplier = models.Supplier.objects.filter(supplier_id=change_supplier_id).exists()   # 取保更改的唯一性
+                    if is_exsit_supplier:
+                        raise AssertionError("supplier objects with %s has already existed." % change_supplier_id)
                 origin_supplier = models.Supplier.objects.get(supplier_id=origin_supplier_id)
+                pk_id = origin_supplier.id
                 origin_supplier.delete()
             except AssertionError:
                 return JsonResponse({"back_msg": "%s 供应商编号已存在."%change_supplier_id})
@@ -61,7 +64,9 @@ def supplier_modify(request):
                 return JsonResponse({"back_msg": "源数据取出失败."})
         form = forms.SupplierForm(request.POST)
         if form.is_valid():
-            form.save()
+            new_supplier = form.save(commit=False)
+            new_supplier.id = pk_id
+            new_supplier.save()
             # TODO: 应该向history中存入记录
             return JsonResponse({"back_msg": OK})
         else:
@@ -82,7 +87,7 @@ def supplier_delete(request):
     except:
         return JsonResponse({"back_msg": "数据库出错, 未能正确删除内容."})
     supplier.is_deleted = True
-    supplier.supplier_id = str(supplier.supplier_id) + "(DELETE%s)"%datetime.datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S %f")   # 避免删除后对添加或修改会有唯一性冲突
+    supplier.supplier_id = str(supplier.supplier_id) + "(DELETED %s)"%datetime.datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S %f")   # 避免删除后对添加或修改会有唯一性冲突
     supplier.save()
     # TODO: 应该向history中存入记录
     return JsonResponse({"back_msg": OK})
@@ -135,14 +140,17 @@ def classification_modify(request):
         form = forms.ClassificationForm(instance=classification)
 
     if request.method == "POST":
+        pk_id = None   # 保留对象的pk, 保证关联的表不出错
         origin_class_name = request.POST.get("origin_class_name", '')
         if origin_class_name:
             try:
                 change_class_name = request.POST.get("class_name")
-                is_exist_classification = models.Classification.objects.filter(class_name=change_class_name).exists()
-                if is_exist_classification:
-                    raise AssertionError("classification objects with %s has aready existed.")
+                if origin_class_name != change_class_name:
+                    is_exist_classification = models.Classification.objects.filter(class_name=change_class_name).exists()
+                    if is_exist_classification:
+                        raise AssertionError("classification objects with %s has aready existed." % change_class_name)
                 origin_classification = models.Classification.objects.get(class_name=origin_class_name)
+                pk_id = origin_classification.id
                 origin_classification.delete()
             except AssertionError:
                 return JsonResponse({"back_msg": "%s 种类名已存在."%change_class_name})
@@ -150,7 +158,9 @@ def classification_modify(request):
                 return JsonResponse({"back_msg": "源数据取出失败."})
         form = forms.ClassificationForm(request.POST)
         if form.is_valid():
-            form.save()
+            new_classification = form.save(commit=False)
+            new_classification.id = pk_id
+            new_classification.save()
             # TODO: 应该向history中存入记录
             return JsonResponse({"back_msg": OK})
         else:
@@ -172,7 +182,7 @@ def classification_delete(request):
         logging.error(er)
         return JsonResponse({"back_msg": "数据库出错, 未能正确删除内容."})
     classification.is_deleted = True
-    classification.class_name = str(classification.class_name) + "(DELETE%s)"%datetime.datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S %f")   # 避免删除后对添加或修改内容时会有唯一性冲突
+    classification.class_name = str(classification.class_name) + "(DELETED %s)"%datetime.datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S %f")   # 避免删除后对添加或修改内容时会有唯一性冲突
     classification.save()
     # TODO: 应该向history中存入记录
     return JsonResponse({"back_msg": OK})

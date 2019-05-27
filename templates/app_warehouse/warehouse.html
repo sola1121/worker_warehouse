@@ -152,31 +152,44 @@
         $("#warehouseSearch").on("click", function (evt) {
             var supplier_id = $("#searchWarehouseSupplierId").val()
             var supplier_name = $("#searchWarehouseSupplierName").val()
-            var good_id = $("#searchWarehouseId").val()
-            var good_name = $("#searchWarehouseName").val()
+            var good_id = $("#searchWarehouseGoodId").val()
+            var good_name = $("#searchWarehouseGoodName").val()
             var class_name = $("#searchWarehouseClassName").val()
             var start_time = $("#searchWarehouseStartTime").val()
             var end_time = $("#searchWarehouseEndTime").val()
-            window.location.href = "{% url 'warehouse:warehouse_home' %}1/?supplierId=" + supplier_id 
-                                                                        + "&supplierName=" + supplier_name
-                                                                        + "&goodId=" + good_id
-                                                                        + "&goodName=" + good_name
-                                                                        + "&className=" + class_name
-                                                                        + "&startTime=" + start_time
-                                                                        + "&endTime=" + end_time
-        })
-    }
+            window.location.href = "{% url 'warehouse:warehouse_home' %}1/?supplierId=" + supplier_id +
+                                                                         "&supplierName=" + supplier_name +
+                                                                         "&goodId=" + good_id +
+                                                                         "&goodName=" + good_name +
+                                                                         "&className=" + class_name +
+                                                                         "&startTime=" + start_time +
+                                                                         "&endTime=" + end_time
+            })
+        }
     
 
     function buttonDownload(){
         // 文件下载功能
         $("#backend-download").on("click", function(evt){
-            // TODO: 这里要改下载请求
             var supplierId = getQueryString("supplierId")
             var supplierName = getQueryString("supplierName")
-            var download_url = "{% url 'warehouse:supplier_download' %}?supplierId=" + supplierId + "&supplierName=" + supplierName
-            var filename = (supplierId || supplierName) ? "供应商 - 搜索编号_" + supplierId + ", 搜索名称_" + supplierName + ".xlsx" : "供应商.xlsx"
-            // 模拟下载, 仅htm5支持
+            var goodId = getQueryString("goodId")
+            var goodName = getQueryString("goodName")
+            var className = getQueryString("className")
+            var startTime = getQueryString("startTime")
+            var endTime = getQueryString("endTime")
+            var download_url = "{% url 'warehouse:warehouse_download' %}?supplierId=" + supplierId + 
+                                                                        "&supplierName=" + supplierName +
+                                                                        "&goodId=" + goodId +
+                                                                        "&goodName=" + goodName +
+                                                                        "&className=" + className +
+                                                                        "&startTime=" + startTime +
+                                                                        "&endTime=" + endTime 
+            var filename = (supplierId || supplierName || goodId || goodName || className || startTime || endTime)
+                            ? "储物库 - 搜索编号_" + goodId + ", 搜索名称_" + goodName + ", 分类_" + className + 
+                             ", 供应商编号_" + supplierId + ", 供应商名称_" + supplierName + "时间区间(" + startTime + ", " + endTime + ").xlsx" 
+                            : "储物库.xlsx"
+            // 模拟下载, 仅html5支持
             var aElement = document.createElement('a')
             aElement.setAttribute('href', download_url)
             aElement.setAttribute('download', filename)
@@ -204,17 +217,16 @@
 
     function buttonDelete(){
         // 删除按钮功能赋予
-        // TODO:　这里要给删除的指向请求
         $(".backend-delete").on("click", function(evt){
-            var supplier_id = this.getAttribute("value_id")
-            var flag = window.confirm("确定删除编号" + supplier_id + "的内容么?")
+            var good_id = this.getAttribute("value_id")
+            var flag = window.confirm("确定删除编号 " + good_id + " 的内容么?")
             if (!flag){return}
             $.ajax({
-                url: "{% url 'warehouse:supplier_delete' %}",
+                url: "{% url 'warehouse:warehouse_delete' %}",
                 type: "post",
                 async: true,
                 dataType: "json",
-                data: {supplierId: supplier_id},
+                data: {goodId: good_id},
                 success: function(reback){
                     if (reback["back_msg"]== "OK"){
                         window.location.reload()
@@ -292,13 +304,13 @@
             var page_items_a = $(".pagination>.page-item>a")
             for(var i=0; i<page_items_a.length; i++){
                 var origin_href = page_items_a[i].getAttribute("href")
-                page_items_a[i].setAttribute("href", origin_href + "?supplierId=" + supplierId
-                                                                    + "&supplierName=" + supplierName
-                                                                    + "&goodId=" + goodId
-                                                                    + "&goodName=" + goodName
-                                                                    + "&className=" + className
-                                                                    + "&startTime=" + startTime
-                                                                    + "&endTime=" + endTime)
+                page_items_a[i].setAttribute("href", origin_href + "?supplierId=" + supplierId +
+                                                                    "&supplierName=" + supplierName +
+                                                                    "&goodId=" + goodId +
+                                                                    "&goodName=" + goodName +
+                                                                    "&className=" + className +
+                                                                    "&startTime=" + startTime +
+                                                                    "&endTime=" + endTime)
             }
         }
     }

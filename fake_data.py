@@ -95,10 +95,10 @@ if __name__ == "__main__":
     TZ = pytz.timezone("Asia/Shanghai")
     # 进行数据的生成
     # create_data_classification()
-    create_data_warehouse(60)
+    create_data_warehouse(80)
 
     # 在此下面进行数据的验证
-    class_obj = models.Classification.objects.filter(is_deleted=False, class_name__icontains="james")
+    # class_obj = models.Classification.objects.filter(is_deleted=False, class_name__icontains="james")
     # print(class_obj)
 
     # dt_time = datetime.datetime(*[int(i) for i in 时间.strip().split("-")], tzinfo=TZ)
@@ -109,7 +109,11 @@ if __name__ == "__main__":
     #     is_deleted=False,
     #     supplier__supplier_id__icontains="3",
     #     classification__class_name__icontains="李",
-    #     update_date__lte=dt_time
+    #     update_date__lte=datetime.datetime.now(TZ)
     # )
 
-    # print(ware_obj)
+    # # print(ware_obj)
+
+    # for info in ware_obj:
+    #     print(dir(info))
+    #     print(info.supplier.supplier_name)
