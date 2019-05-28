@@ -3,7 +3,10 @@
 {% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
 
 {% block branding %}
-<h1 id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a></h1>
+{# 更改源码, 改变元素为inline #}
+<h1 id="site-name" style="display: inline;"><a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a></h1>
+{# 自定义的跳转, 跳转回原先的页面 #}
+<small><a href="/" title="跳转回普通管理界面">返回</a></small>
 {% endblock %}
 
 {% block nav-global %}{% endblock %}

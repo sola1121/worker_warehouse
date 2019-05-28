@@ -1,0 +1,58 @@
+<form class="float-right">
+    <div class="form-row">
+        <div class="col-md-2">
+            <label class="sr-only" for="searchHistoryUserName">账户名</label>
+            <input type="text" class="form-control mb-2" id="searchHistoryUserName" placeholder="账户名">
+            <label class="sr-only" for="searchHistoryUserName">账户名搜索</label>
+        </div>
+
+        <div class="col-md-2">
+            <label class="sr-only" for="searchHistoryFullName">人员姓名</label>
+            <input type="text" class="form-control mb-2" id="searchHistoryFullName" placeholder="人员姓名">
+            <label class="sr-only" for="searchHistoryFullName">人员姓名搜索</label>  
+        </div>
+
+        <div class="col-md-2">
+            <label class="sr-only" for="searchHistoryWareName">影响的对象</label>
+            <select class="form-control mb-2" id="searchHistoryWareName">
+                <option value="">选择查询对象</option>
+                {% if select_warehouse_tag %}
+                    {% for key, value in select_warehouse_tag.items %}
+                        <option value="{{key}}">{{value}}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+            <label class="sr-only" for="searchHistoryWareName">影响的对象搜索</label>
+        </div>
+
+        <div class="col-md-1">
+            <label class="sr-only" for="searchHistoryAction">动作</label>
+            <select class="form-control mb-2" id="searchHistoryAction">
+                <option value="">选择动作</option>
+                {% if select_action_tag %}
+                    {% for key, value in select_action_tag.items %}
+                        <option value="{{key}}">{{value}}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+            <label class="sr-only" for="searchHistoryAction">动作搜索</label>
+        </div>
+
+        <div class="col-md-2">
+            <label class="sr-only" for="searchHistoryStartTime">开始时间</label>
+            <input type="text" class="form-control" id="searchHistoryStartTime" placeholder="开始时间">
+            <label class="sr-only" for="searchHistoryStartTime">开始时间搜索</label>
+        </div>
+
+        <div class="col-md-2">
+            <label class="sr-only" for="searchHistoryEndTime">结束时间</label>
+            <input type="text" class="form-control" id="searchHistoryEndTime" placeholder="结束时间">
+            <label class="sr-only" for="searchHistoryEndTime">结束时间搜索</label>
+        </div>
+        
+        <div class="col-md-1 text-right">
+            <button type="button" class="btn btn-primary" id="historySearch"><i class="fa fa-search"></i></button>
+        </div>
+
+    </div>
+</form>

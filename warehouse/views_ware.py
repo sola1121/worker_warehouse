@@ -5,6 +5,7 @@ import pytz
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse, FileResponse, Http404
 from django.core.paginator import Paginator
 
@@ -54,6 +55,7 @@ class RequestQueryHandler:
 
 ### 在库相关 ###
 
+@login_required(login_url="/")
 def warehouse(request, page=1):
     """在库货物显示与查询"""
     request_query = RequestQueryHandler(request)
@@ -86,6 +88,7 @@ def warehouse(request, page=1):
                    "end_time": request_query.origin_end_time})
 
 
+@login_required(login_url="/")
 def warehouse_modify(request):
     """在库货物添加和修改"""
     good_id = request.GET.get("goodId", '')
@@ -130,6 +133,7 @@ def warehouse_modify(request):
                    "form": form})
 
 
+@login_required(login_url="/")
 def warehouse_delete(request):
     """储物删除"""
     good_id = request.POST.get("goodId", '')
@@ -144,6 +148,7 @@ def warehouse_delete(request):
     return JsonResponse({"back_msg": OK})
 
 
+@login_required(login_url="/")
 def warehouse_download(request):
     """下载查询结果"""
     request_query = RequestQueryHandler(request)
@@ -165,10 +170,11 @@ def warehouse_download(request):
     file_wb = Workbook()
     file_sheet = file_wb.get_sheet_by_name(file_wb.sheetnames[0])
     file_sheet.title = "储物库"
-    file_sheet.append(["储物编号", "储物名称", "储物分类", "供应商编号", "供应商名称", "规格/型号", "计件单位", "储物数量", "总金额", "备注"])
+    file_sheet.append(["储物编号", "储物名称", "储物分类", "供应商编号", "供应商名称", "规格/型号", "计件单位", "储物数量", "总金额", "最近更新", "备注"])
     for info in warehouses:
         file_sheet.append([info.good_id, info.good_name, info.classification.class_name, info.supplier.supplier_id, info.supplier.supplier_name, 
-                           info.spec, info.unit, info.amount, info.price, str(info.remark).replace('\n', '').replace('\r', '') if info.remark else ''])
+                           info.spec, info.unit, info.amount, info.price, datetime.datetime.strftime(info.update_date, "%Y-%m-%d %H:%M:%S"),
+                           str(info.remark).replace('\n', '').replace('\r', '') if info.remark else ''])
     response = HttpResponse(save_virtual_workbook(file_wb))
     response["Content-Type"] = "application/vnd.ms-excel"
     response["Content-Disposition"] = "attachment;filename=\"%s\"" % filename

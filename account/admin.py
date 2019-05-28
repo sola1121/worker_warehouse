@@ -1,13 +1,13 @@
 from django.contrib.auth import admin as auth_admin
 from django.contrib import admin
 
-from .models import User
+from .models import User, History
 # Register your models here.
 
 admin.site.site_title = "数据库后台管理"
 admin.site.site_header = "数据库管理界面"
 
-@admin.register(User)
+@admin.register(User)   # 注册自定义User
 class UserModelAdmin(auth_admin.UserAdmin):
     search_fields = ("id", "username", "full_name", "email", "phone")
     sortable_by = ("id", "last_login", "date_joined")
@@ -17,3 +17,8 @@ class UserModelAdmin(auth_admin.UserAdmin):
     fieldsets[1] = ("个人信息", {"fields": ("full_name", "email", "phone")})
     fieldsets[2] = ("账户权限", {"fields": ("is_superuser", "is_active")})
     readonly_fields = ("last_login", "date_joined")
+
+
+@admin.register(History)
+class HistoryModelAdmin(admin.ModelAdmin):
+    pass

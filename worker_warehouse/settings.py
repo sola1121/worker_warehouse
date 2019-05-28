@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import logging
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -128,6 +129,11 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "statics"), ]
 STATIC_ROOT = os.path.join(BASE_DIR, "static_root")
 
 AUTH_USER_MODEL = "account.User"
+
+# logging.basicConfig(filename=os.path.join(BASE_DIR, "Runnning_log.log"), 
+#                     format="%(levelname)s:%(asctime)s %(message)s",
+#                     datefmt="%Y-%m-%d %H:%M:%S",
+#                     level=logging.INFO)
 
 if __name__ == "__main__":
 

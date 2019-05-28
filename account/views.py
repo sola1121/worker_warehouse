@@ -1,14 +1,25 @@
+import logging
+import datetime
+import collections
+
+import pytz
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 
-from .models import User
+from .models import User, History
+from warehouse.models import InWarehouse, OutWareHouse, Warehouse, Sale
 
 # Create your views here.
+
+PER_PAGE_HISTORY = 20
+TZ = pytz.timezone("Asia/Shanghai")
 
 ### 用户账户管理 ###
 
 def account_login(request):
+    """账户登录"""
     if request.user.is_authenticated:
         return redirect("/index")
     if request.method == "POST":
@@ -31,12 +42,14 @@ def account_login(request):
 
 
 def account_logout(request):
+    """账户登出"""
     logout(request)
     return render(request, "app_account/login.html")
 
 
 @login_required(login_url="/")
 def account_change_password(request):
+    """账户更改自己的密码"""
     if request.method == "POST":
         old_pass = request.POST.get("oldPassword", None)
         new_pass1 = request.POST.get("newPassword1", None)
@@ -55,4 +68,67 @@ def account_change_password(request):
     return render(request, "app_account/change_password.html")
 
 
-### 用户历史时间管理 ###
+### 用于history处理GET请求参数 ###
+
+class RequestQueryHandler:
+    """处理GET请求参数"""
+    def __init__(self, request):
+        self.username = request.GET.get("userName", '')
+        self.fullname = request.GET.get("fullName", '')
+        self.warename = request.GET.get("wareName", '')
+        self.action = request.GET.get("action", '')
+        self._time_deal(request)
+    
+    def _time_deal(self, request):
+        start_time = request.GET.get("startTime", '')
+        end_time = request.GET.get("endTime", '')
+        self.origin_start_time, self.origin_end_time = start_time, end_time
+        try:
+            if start_time:
+                trans_time = datetime.datetime.strptime(start_time, "%Y-%m-%d") - datetime.timedelta(days=1)
+                self.start_time = datetime.datetime(trans_time.year, trans_time.month, trans_time.day, tzinfo=TZ)
+            else:
+                self.start_time = datetime.datetime(1970, 1, 1, 0, 0, tzinfo=TZ)
+            if end_time:
+                trans_time = datetime.datetime.strptime(end_time, "%Y-%m-%d") + datetime.timedelta(days=1)
+                self.end_time = datetime.datetime(trans_time.year, trans_time.month, trans_time.day, tzinfo=TZ)
+            else:
+                self.end_time = datetime.datetime.now(TZ)
+            if start_time and end_time:
+                if self.start_time > self.end_time:
+                    self.start_time, self.end_time = self.end_time, self.start_time
+        except Exception as ex:
+            logging.error(ex)
+            return render(request, "exceptions/500.html", status=500)
+
+
+### 用户历史管理 ###
+
+@login_required(login_url="/")
+def history(request, page=1):
+    """用户历史信息的查询"""
+    request_query = RequestQueryHandler(request)
+    username, fullname, warename, action = (request_query.username, request_query.fullname, 
+                                            request_query.warename, request_query.action)
+    start_time, end_time = request_query.start_time, request_query.end_time
+    users = User.objects.filter(username__icontains=username, full_name__icontains=fullname)
+    histories = History.objects.filter(user_id__in=[uid[0] for uid in users.values_list("id")],
+                                       affect_ware=warename,
+                                       action=action,
+                                       create_date__gte=start_time,
+                                       create_date__lte=end_time)
+    paginator = Paginator(histories.order_by("-create_date"), PER_PAGE_HISTORY)
+    if int(page) not in list(paginator.page_range):
+        return redirect("/history/")
+    pagetor = paginator.get_page(page)
+    return render(request, 
+                  "app_account/history.html",
+                  {"active_navbar": "history",
+                   "pagetor": pagetor,
+                   "username": username,
+                   "fullname": fullname,
+                   "action": action,
+                   "start_time": request_query.origin_start_time,
+                   "end_time": request_query.origin_end_time,
+                   "select_warehouse_tag": collections.OrderedDict(History.WARE_RECORD),
+                   "select_action_tag": collections.OrderedDict(History.ACTION_RECORD)})

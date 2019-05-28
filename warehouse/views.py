@@ -5,6 +5,7 @@ import pytz
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse, FileResponse
 from django.core.paginator import Paginator
 
@@ -18,6 +19,7 @@ PER_PAGE = 10
 
 ### 供应商相关 ###
 
+@login_required(login_url="/")
 def supplier(request, page=1):
     """供应商页面显示与查询"""
     supplier_id = request.GET.get("supplierId", '')
@@ -37,6 +39,7 @@ def supplier(request, page=1):
                    "supplier_name": supplier_name})
 
 
+@login_required(login_url="/")
 def supplier_modify(request):
     """供应商添加和修改"""
     supplier_id = request.GET.get("supplierId", '')
@@ -79,6 +82,7 @@ def supplier_modify(request):
                    "form": form})
 
 
+@login_required(login_url="/")
 def supplier_delete(request):
     """供应商删除"""
     supplier_id = request.POST.get("supplierId", '')
@@ -93,6 +97,7 @@ def supplier_delete(request):
     return JsonResponse({"back_msg": OK})
 
 
+@login_required(login_url="/")
 def supplier_download(request):
     """下载查询结果"""
     supplier_id = request.GET.get("supplierId", '')
@@ -115,6 +120,7 @@ def supplier_download(request):
 
 ### 物品种类相关 ###
 
+@login_required(login_url="/")
 def classification(request, page=1):
     """物品分类的查询与显示"""
     class_name = request.GET.get("className", '')
@@ -131,6 +137,7 @@ def classification(request, page=1):
                    "class_name": class_name})
 
 
+@login_required(login_url="/")
 def classification_modify(request):
     """添加和更改相应的物品分类"""
     class_name = request.GET.get("className", '')
@@ -173,6 +180,7 @@ def classification_modify(request):
                    "form": form})
 
 
+@login_required(login_url="/")
 def classification_delete(request):
     """物品分类删除"""
     class_name = request.POST.get("className", '')
@@ -188,6 +196,7 @@ def classification_delete(request):
     return JsonResponse({"back_msg": OK})
 
 
+@login_required(login_url="/")
 def classification_download(request):
     """下载物品分类"""
     class_name = request.GET.get("className", '')

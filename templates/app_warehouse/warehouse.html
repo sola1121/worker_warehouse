@@ -48,10 +48,10 @@
                     {% for contact in pagetor %}
                     <tr>
                         <th class="backend-num-id" scope="row"></th>
-                        <th>{{contact.good_id}}</th>
+                        <th>{{contact.good_id|title}}</th>
                         <th>{{contact.good_name}}</th>
                         <th>{{contact.classification.class_name}}</th>
-                        <th>{{contact.supplier.supplier_id}}</th>
+                        <th>{{contact.supplier.supplier_id|title}}</th>
                         <th>{{contact.supplier.supplier_name}}</th>
                         <th>{{contact.spec}}</th>
                         <th>{{contact.unit}}</th>

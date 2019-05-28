@@ -117,3 +117,16 @@ if __name__ == "__main__":
     # for info in ware_obj:
     #     print(dir(info))
     #     print(info.supplier.supplier_name)
+
+    # query_str = "models.Supplier.objects.all()[:5]"
+    # result = eval(query_str)
+
+    # print(result)
+
+    # from django.contrib.auth.models import AbstractUser
+    # from account.models import User
+    # print(issubclass(User, django.db.models.Model))
+    uid = [u_id[0] for u_id in models.Warehouse.objects.filter(id__lt=6).values_list("id")]
+    print(uid)
+    res = models.Warehouse.objects.filter(id__in=uid)
+    print(res)

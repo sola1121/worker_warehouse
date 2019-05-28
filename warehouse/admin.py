@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Classification, Supplier, Warehouse, InWarehouse, OutWareHouse, Sale, History
+from .models import Classification, Supplier, Warehouse, InWarehouse, OutWareHouse, Sale
 
 # Register your models here.
 
@@ -34,9 +34,4 @@ class OutWareHouseModelAdmin(admin.ModelAdmin):
 
 @admin.register(Sale)
 class SaleModelAdmin(admin.ModelAdmin):
-    pass
-
-
-@admin.register(History)
-class HistoryModelAdmin(admin.ModelAdmin):
     pass

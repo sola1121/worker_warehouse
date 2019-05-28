@@ -39,7 +39,7 @@
                     {% for contact in pagetor %}
                     <tr>
                         <th class="backend-num-id" scope="row"></th>
-                        <th>{{contact.supplier_id}}</th>
+                        <th>{{contact.supplier_id|title}}</th>
                         <th>{{contact.supplier_name}}</th>
                         <th class="backend-remark">
                             {% if contact.remark %}
