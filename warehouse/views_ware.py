@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse, FileResponse, Http404
 from django.core.paginator import Paginator
 
+from account.models import History
 from warehouse import models, forms
 
 # Create your views here.
@@ -71,7 +72,7 @@ def warehouse(request, page=1):
                                                  good_name__icontains=good_name,
                                                  update_date__gte=start_time,
                                                  update_date__lte=end_time)
-    paginator = Paginator(warehouses.order_by("update_date"), PER_PAGE)
+    paginator = Paginator(warehouses.order_by("-update_date"), PER_PAGE)
     if int(page) not in list(paginator.page_range):
         return redirect("/warehouse/warehouse/")
     pagetor = paginator.get_page(page)
@@ -98,7 +99,6 @@ def warehouse_modify(request):
         form = forms.WarehouseForm(instance=warehouse)
 
     if request.method == "POST":
-        pk_id = None   # 保留更改对象的pk, 以免关联的表出错
         origin_good_id = request.POST.get("origin_good_id", '')
         if origin_good_id:
             try:
@@ -108,23 +108,33 @@ def warehouse_modify(request):
                     if is_exist_warehouse:
                         raise AssertionError("warehouse objetcts with %s has aready existed."%change_good_id)
                 origin_warehouse = models.Warehouse.objects.get(good_id=origin_good_id)
-                pk_id = origin_warehouse.id
-                origin_warehouse.delete()
             except AssertionError:
                 return JsonResponse({"back_msg": "%s 储物编号已经存在."%change_good_id})
             except Exception:
                 return JsonResponse({"back_msg": "源数据取出失败."})
         else:
             return JsonResponse({"back_msg": "未获取到储物编号."})   # 确保必须要有原始的储物数据
+        pk_id = origin_warehouse.id   # 保留更改对象的pk, 以免关联的表出错
+        origin_warehouse.delete()
         form = forms.WarehouseForm(request.POST)
         if form.is_valid():
             new_warehouse = form.save(commit=False)
             new_warehouse.id = pk_id
+            if int(new_warehouse.amount) < 0:
+                new_warehouse.amount = 0
+            new_warehouse.amount = int(new_warehouse.amount)
             new_warehouse.save()
-            # TODO: 应该向history中存入记录
+            # NOTE: 向history中存入记录
+            new_history = History.set_record(cur_user=request.user, model=new_warehouse, act=History.MODIFY)
+            new_history.save()
             return JsonResponse({"back_msg": OK})
         else:
-            return JsonResponse({"back_msg": form.errors.get_json_data(escape_html=True)})
+            origin_warehouse.save()   # 恢复原先删除
+            full_msg = str()
+            for value in form.errors.values():
+                for msg in value: 
+                    full_msg += msg + "\n" 
+            return JsonResponse({"back_msg": full_msg})
 
     return render(request, 
                   "app_warehouse/warehouse_change.html", 
@@ -144,7 +154,9 @@ def warehouse_delete(request):
     warehouse.is_deleted = True
     warehouse.good_id = str(warehouse.supplier_id) + "(DELETED %s)"%datetime.datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S %f")   # 避免删除后对添加或修改会有唯一性冲突
     warehouse.save()
-    # TODO: 应该向history中存入记录
+    # NOTE: history中存入记录
+    new_history = History.set_record(cur_user=request.user, model=warehouse, act=History.DELETE)
+    new_history.save()
     return JsonResponse({"back_msg": OK})
 
 
@@ -171,7 +183,7 @@ def warehouse_download(request):
     file_sheet = file_wb.get_sheet_by_name(file_wb.sheetnames[0])
     file_sheet.title = "储物库"
     file_sheet.append(["储物编号", "储物名称", "储物分类", "供应商编号", "供应商名称", "规格/型号", "计件单位", "储物数量", "总金额", "最近更新", "备注"])
-    for info in warehouses:
+    for info in warehouses.order_by("-update_date"):
         file_sheet.append([info.good_id, info.good_name, info.classification.class_name, info.supplier.supplier_id, info.supplier.supplier_name, 
                            info.spec, info.unit, info.amount, info.price, datetime.datetime.strftime(info.update_date, "%Y-%m-%d %H:%M:%S"),
                            str(info.remark).replace('\n', '').replace('\r', '') if info.remark else ''])

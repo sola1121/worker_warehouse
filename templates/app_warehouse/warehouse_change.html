@@ -31,7 +31,7 @@
     }
 
     var initThisPage = {
-        initButton: function(){buttonAddConfirm(); buttonAddAnother()}
+        initButton: function(){buttonAddConfirm();}
     }
 
     function buttonAddConfirm(){
@@ -41,14 +41,22 @@
         })
     }
 
-    //function buttonAddAnother(){
-    //    // 添加一个依然保持在当前
-    //    $("#backend-add-anothor").on("click", function(){
-    //        asyncPost("{% url 'warehouse:warehouse_modify' %}")
-    //    })
-    //}
 
     function asyncPost(next_page){
+        var verifyAmount = Number($("#backend-amount").val())
+        var verifyPrice = Number($("#backend-price").val())
+
+        if (!verifyAmount || !verifyPrice) { 
+            if (verifyPrice != 0 || verifyPrice != 0){
+                window.alert("非法数字, 不能包含字符.")
+                return
+            }
+        }
+        if (Math.floor(verifyAmount) !== verifyAmount && verifyAmount < 0) {
+            window.alert("储物数量必须为不为零的整数.")
+            return
+        }
+
         $.post(
             "{% url 'warehouse:warehouse_modify' %}",
             {

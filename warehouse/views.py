@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse, FileResponse
 from django.core.paginator import Paginator
 
+from account.models import History
 from warehouse import models, forms
 
 # Create your views here.
@@ -49,31 +50,39 @@ def supplier_modify(request):
         form = forms.SupplierForm(instance=supplier)
 
     if request.method == "POST":
-        pk_id = None   # 保留对象的pk, 以免关联的表出错
+        action = History.CREATE   # 记录操作动作, 初始默认是创建
         origin_supplier_id = request.POST.get("origin_supplier_id", '')
         if origin_supplier_id:
             try:
+                action = History.MODIFY
                 change_supplier_id = request.POST.get("supplier_id")
                 if origin_supplier_id != change_supplier_id:
                     is_exsit_supplier = models.Supplier.objects.filter(supplier_id=change_supplier_id).exists()   # 取保更改的唯一性
                     if is_exsit_supplier:
                         raise AssertionError("supplier objects with %s has already existed." % change_supplier_id)
                 origin_supplier = models.Supplier.objects.get(supplier_id=origin_supplier_id)
-                pk_id = origin_supplier.id
-                origin_supplier.delete()
             except AssertionError:
                 return JsonResponse({"back_msg": "%s 供应商编号已存在."%change_supplier_id})
             except:
                 return JsonResponse({"back_msg": "源数据取出失败."})
+        pk_id = origin_supplier.id   # 保留对象的pk, 以免关联的表出错
+        origin_supplier.delete()
         form = forms.SupplierForm(request.POST)
         if form.is_valid():
             new_supplier = form.save(commit=False)
             new_supplier.id = pk_id
             new_supplier.save()
-            # TODO: 应该向history中存入记录
+            # NOTE:　向history中存入记录
+            new_history = History.set_record(cur_user=request.user, model=new_supplier, act=action)
+            new_history.save()
             return JsonResponse({"back_msg": OK})
         else:
-            return JsonResponse({"back_msg": form.errors.get_json_data(escape_html=True)})
+            origin_supplier.save()   # 恢复原始数据的删除
+            full_msg = str()
+            for value in form.errors.values():
+                for msg in value: 
+                    full_msg += msg + "\n" 
+            return JsonResponse({"back_msg": full_msg})
 
     return render(request, 
                   "app_warehouse/supplier_change.html", 
@@ -93,7 +102,9 @@ def supplier_delete(request):
     supplier.is_deleted = True
     supplier.supplier_id = str(supplier.supplier_id) + "(DELETED %s)"%datetime.datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S %f")   # 避免删除后对添加或修改会有唯一性冲突
     supplier.save()
-    # TODO: 应该向history中存入记录
+    # NOTE: 向history中存入记录
+    new_history = History.set_record(cur_user=request.user, model=supplier, act=History.DELETE)
+    new_history.save()
     return JsonResponse({"back_msg": OK})
 
 
@@ -147,31 +158,39 @@ def classification_modify(request):
         form = forms.ClassificationForm(instance=classification)
 
     if request.method == "POST":
-        pk_id = None   # 保留对象的pk, 保证关联的表不出错
+        action = History.CREATE   # 记录操作动作, 初始默认是创建
         origin_class_name = request.POST.get("origin_class_name", '')
         if origin_class_name:
             try:
+                action = History.MODIFY
                 change_class_name = request.POST.get("class_name")
                 if origin_class_name != change_class_name:
                     is_exist_classification = models.Classification.objects.filter(class_name=change_class_name).exists()
                     if is_exist_classification:
                         raise AssertionError("classification objects with %s has aready existed." % change_class_name)
                 origin_classification = models.Classification.objects.get(class_name=origin_class_name)
-                pk_id = origin_classification.id
-                origin_classification.delete()
             except AssertionError:
                 return JsonResponse({"back_msg": "%s 种类名已存在."%change_class_name})
             except:
                 return JsonResponse({"back_msg": "源数据取出失败."})
+        pk_id = origin_classification.id   # 保留对象的pk, 以免关联的表出错
+        origin_classification.delete()
         form = forms.ClassificationForm(request.POST)
         if form.is_valid():
             new_classification = form.save(commit=False)
             new_classification.id = pk_id
             new_classification.save()
-            # TODO: 应该向history中存入记录
+            # NOTE: 向history中存入记录
+            new_history = History.set_record(cur_user=request.user, model=new_classification, act=action)
+            new_history.save()
             return JsonResponse({"back_msg": OK})
         else:
-            return JsonResponse({"back_msg": form.errors.get_json_data(escape_html=True)})
+            origin_classification.save()   # 恢复原始数据删除
+            full_msg = str()
+            for value in form.errors.values():
+                for msg in value: 
+                    full_msg += msg + "\n" 
+            return JsonResponse({"back_msg": full_msg})
 
     return render(request, 
                   "app_warehouse/classification_change.html", 
@@ -192,7 +211,9 @@ def classification_delete(request):
     classification.is_deleted = True
     classification.class_name = str(classification.class_name) + "(DELETED %s)"%datetime.datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S %f")   # 避免删除后对添加或修改内容时会有唯一性冲突
     classification.save()
-    # TODO: 应该向history中存入记录
+    # NOTE: 向history中存入记录
+    new_history = History.set_record(cur_user=request.user, model=classification, act=History.DELETE)
+    new_history.save()
     return JsonResponse({"back_msg": OK})
 
 

@@ -94,8 +94,9 @@ if __name__ == "__main__":
 
     TZ = pytz.timezone("Asia/Shanghai")
     # 进行数据的生成
-    # create_data_classification()
-    create_data_warehouse(80)
+    create_data_supplier(40)
+    create_data_classification(30)
+    create_data_warehouse(20)
 
     # 在此下面进行数据的验证
     # class_obj = models.Classification.objects.filter(is_deleted=False, class_name__icontains="james")

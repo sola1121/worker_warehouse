@@ -3,7 +3,10 @@ import datetime
 import collections
 
 import pytz
+from openpyxl import Workbook
+from openpyxl.writer.excel import save_virtual_workbook
 from django.shortcuts import render, redirect
+from django.http import HttpResponse
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -112,11 +115,13 @@ def history(request, page=1):
                                             request_query.warename, request_query.action)
     start_time, end_time = request_query.start_time, request_query.end_time
     users = User.objects.filter(username__icontains=username, full_name__icontains=fullname)
-    histories = History.objects.filter(user_id__in=[uid[0] for uid in users.values_list("id")],
-                                       affect_ware=warename,
-                                       action=action,
-                                       create_date__gte=start_time,
-                                       create_date__lte=end_time)
+    query_string = dict(user_id__in=[uid[0] for uid in users.values_list("id")], 
+                        create_date__gte=start_time, create_date__lte=end_time)
+    if warename:
+        query_string["affect_ware"] = warename
+    if action:
+        query_string["action"] = action
+    histories = History.objects.filter(**query_string)
     paginator = Paginator(histories.order_by("-create_date"), PER_PAGE_HISTORY)
     if int(page) not in list(paginator.page_range):
         return redirect("/history/")
@@ -127,8 +132,39 @@ def history(request, page=1):
                    "pagetor": pagetor,
                    "username": username,
                    "fullname": fullname,
+                   "warename": warename,
                    "action": action,
                    "start_time": request_query.origin_start_time,
                    "end_time": request_query.origin_end_time,
                    "select_warehouse_tag": collections.OrderedDict(History.WARE_RECORD),
                    "select_action_tag": collections.OrderedDict(History.ACTION_RECORD)})
+
+
+def history_download(request):
+    """下载对应历史信息"""
+    request_query = RequestQueryHandler(request)
+    username, fullname, warename, action = (request_query.username, request_query.fullname, 
+                                            request_query.warename, request_query.action)
+    start_time, end_time = request_query.start_time, request_query.end_time
+    users = User.objects.filter(username__icontains=username, full_name__icontains=fullname)
+    query_string = dict(user_id__in=[uid[0] for uid in users.values_list("id")], 
+                        create_date__gte=start_time, create_date__lte=end_time)
+    if warename:
+        query_string["affect_ware"] = warename
+    if action:
+        query_string["action"] = action
+    histories = History.objects.filter(**query_string)
+    filename = "用户历史 - 账户名_%s, 姓名_%s, 对象_%s, 动作_%s, 时间区间(%s, %s).xlsx" \
+               % (username, fullname, warename, action, start_time, end_time) \
+                 if any((username, fullname, warename, action, start_time, end_time)) else "用户历史.xlsx"
+    file_wb = Workbook()
+    file_sheet = file_wb.get_sheet_by_name(file_wb.sheetnames[0])
+    file_sheet.title = "用户历史"
+    # TODO: 这里下载
+    file_sheet.append([])
+    for info in histories:
+        file_sheet.append([])
+    response = HttpResponse(save_virtual_workbook(file_wb))
+    response["Content-Type"] = "application/vnd.ms-excel"
+    response["Content-Disposition"] = "attachment;filename=\"%s\"" % filename
+    return response

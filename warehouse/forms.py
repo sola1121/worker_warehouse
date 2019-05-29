@@ -13,8 +13,8 @@ class SupplierForm(ModelForm):
             "remark": "备注"
         }
         widgets = {
-            "supplier_id": TextInput(attrs={"id": "backend-supplierId", "class": "form-control",}),
-            "supplier_name": TextInput(attrs={"id": "backend-supplierName", "class": "form-control"}),
+            "supplier_id": TextInput(attrs={"id": "backend-supplierId", "class": "form-control", "required": True}),
+            "supplier_name": TextInput(attrs={"id": "backend-supplierName", "class": "form-control", "required": True}),
             "remark": Textarea(attrs={"id": "backend-remark", "class": "form-control"}),
         }
 
@@ -28,7 +28,7 @@ class ClassificationForm(ModelForm):
             "remark": "备注"
         }
         widgets = {
-            "class_name": TextInput(attrs={"id": "backend-className", "class": "form-control"}),
+            "class_name": TextInput(attrs={"id": "backend-className", "class": "form-control", "required": True}),
             "remark": Textarea(attrs={"id": "backend-remark", "class": "form-control"}),
         }
 
@@ -57,13 +57,13 @@ class WarehouseForm(ModelForm):
             "remark": "备注" 
         }
         widgets = {
-            "good_id": TextInput(attrs={"id": "backend-goodId", "class": "form-control"}),
-            "good_name": TextInput(attrs={"id": "backend-goodName", "class": "form-control"}),
+            "good_id": TextInput(attrs={"id": "backend-goodId", "class": "form-control", "required": True}),
+            "good_name": TextInput(attrs={"id": "backend-goodName", "class": "form-control", "required": True}),
             "classification": Select(attrs={"id": "backend-classification", "class": "form-control"}),
             "supplier": Select(attrs={"id": "backend-supplier", "class": "form-control"}),
             "spec": TextInput(attrs={"id": "backend-spec", "class": "form-control"}),
             "unit": TextInput(attrs={"id": "backend-unit", "class": "form-control"}),
-            "amount": NumberInput(attrs={"id": "backend-amount", "class": "form-control"}),
-            "price": NumberInput(attrs={"id": "backend-price", "class": "form-control"}),
+            "amount": NumberInput(attrs={"id": "backend-amount", "class": "form-control", "step": "1", "min": 0}),
+            "price": NumberInput(attrs={"id": "backend-price", "class": "form-control", "step": "0.01", "min": 0}),
             "remark": Textarea(attrs={"id": "backend-remark", "class": "form-control"}),
         }

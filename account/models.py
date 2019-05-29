@@ -30,10 +30,11 @@ class History(models.Model):
         ("Sale", "销售单"),
     ]
 
+    CREATE, MODIFY, DELETE = "CREATE", "MODIFY", "DELETE"
     ACTION_RECORD = [
-        ("CREATE", "创建"),
-        ("MODIFY", "修改"),
-        ("DELETE", "删除"),
+        (CREATE, "创建"),
+        (MODIFY, "修改"),
+        (DELETE, "删除"),
     ]
 
     id = models.AutoField(primary_key=True)
@@ -46,23 +47,26 @@ class History(models.Model):
     def __str__(self):
         return "{} - {} - {}".format(self.create_date, str(User.objects.get(id=self.user_id).username), self.action)
 
-    def set_record(self, cur_user, model, act):
+    @classmethod
+    def set_record(cls, cur_user, model, act):
         """cur_user当前的用户对象, model受影响的模型, act记录动作消息"""
-        if not issubclass(model, models.Model):
+        if not issubclass(model.__class__, models.Model):
             raise ValueError("Unknown model object %s, it's must be a subclass of models.Model." % type(model))
-        self.user_id = cur_user.id
-        self.affect_ware = model.get_model_name()
-        self.affect_object_id = model.id
-        self.action = act
+        new_cls = cls(user_id=cur_user.id, 
+                      affect_ware=model.get_model_name(), 
+                      affect_object_id=model.id, 
+                      action=act)
+        return new_cls
 
     def get_record(self):
+        import warehouse.models as ware_models
         cur_user = User.objects.get(id=self.user_id)
         return "{the_time} {the_account}({the_fullname}) {the_action_cn} {the_model_name_cn} {the_model_object}".format(
                 the_time=datetime.datetime.strftime(self.create_date, "%Y-%m-%d %H:%M:%S"),
                 the_account=cur_user.username,
                 the_fullname=cur_user.full_name,
                 the_model_name_cn=dict(self.WARE_RECORD)[self.affect_ware],
-                the_model_object=eval("%s.objects.filter(id=%s).first().__str__()"%(self.affect_ware, self.affect_object_id)),
+                the_model_object=eval("ware_models.%s.objects.filter(id=%s).first().__str__()"%(self.affect_ware, self.affect_object_id)),
                 the_action_cn=dict(self.ACTION_RECORD)[self.action]
             )
 

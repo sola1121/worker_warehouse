@@ -29,7 +29,7 @@
                     <tr>
 {# 显示不同的列表, 历史显示 #}
                         <th>#</th>
-                        <th>历史记录</th>
+                        <th class="text-left">历史记录</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -111,37 +111,50 @@
             var action = $("#searchHistoryAction").val()
             var startTime = $("#searchHistoryStartTime").val()
             var endTime = $("#searchHistoryEndTime").val()
-            window.location.href = "{% url 'account:history_home' %}1/?userName=" + userName +
-                                                                     "&fullName=" + fullName +
-                                                                     "&wareName=" + wareName +
-                                                                     "&action=" + action +
-                                                                     "&startTime" + startTime +
-                                                                     "&endTime=" + endTime
+            // window.location.href = "{% url 'account:history_home' %}1/?userName=" + userName +
+            //                                                          "&fullName=" + fullName +
+            //                                                          "&wareName=" + wareName +
+            //                                                          "&action=" + action +
+            //                                                          "&startTime" + startTime +
+            //                                                          "&endTime=" + endTime
+
+            console.info(action)
             })
         }
     
 
     function buttonDownload(){
         // 文件下载功能  TODO:相应的参数应该替换掉
+        var objectDictWare = {
+            "Supplier": "供应商",
+            "Classification": "储物分类",
+            "InWarehouse": "入库记录单",
+            "OutWarehouse": "出库记录单",
+            "Warehouse": "储物库",
+            "Sale": "销售单",
+        }
+        var objectDictAct = {
+            "CREATE": "创建",
+            "MODIFY": "修改",
+            "DELETE": "删除",
+        }
         $("#backend-download").on("click", function(evt){
-            var supplierId = getQueryString("supplierId")
-            var supplierName = getQueryString("supplierName")
-            var goodId = getQueryString("goodId")
-            var goodName = getQueryString("goodName")
-            var className = getQueryString("className")
+            var userName = getQueryString("userName")
+            var fullName = getQueryString("fullName")
+            var wareName = getQueryString("wareName")
+            var action = getQueryString("action")
             var startTime = getQueryString("startTime")
             var endTime = getQueryString("endTime")
-            var download_url = "{% url 'warehouse:warehouse_download' %}?supplierId=" + supplierId + 
-                                                                        "&supplierName=" + supplierName +
-                                                                        "&goodId=" + goodId +
-                                                                        "&goodName=" + goodName +
-                                                                        "&className=" + className +
+            var download_url = "{% url 'warehouse:warehouse_download' %}?userName=" + userName + 
+                                                                        "&fullName=" + fullName +
+                                                                        "&wareName=" + wareName +
+                                                                        "&action=" + action +
                                                                         "&startTime=" + startTime +
                                                                         "&endTime=" + endTime 
-            var filename = (supplierId || supplierName || goodId || goodName || className || startTime || endTime)
-                            ? "储物库 - 搜索编号_" + goodId + ", 搜索名称_" + goodName + ", 分类_" + className + 
-                             ", 供应商编号_" + supplierId + ", 供应商名称_" + supplierName + "时间区间(" + startTime + ", " + endTime + ").xlsx" 
-                            : "储物库.xlsx"
+            var filename = (userName || fullName || wareName || action || startTime || endTime)
+                            ? "用户历史 - 账户名_" + userName + ", 姓名_" + fullName + ", 对象_" + objectDictWare[wareName] + 
+                              ", 动作_" + objectDictAct[action] + ", 时间区间(" + startTime + ", " + endTime + ").xlsx" 
+                            : "用户历史.xlsx"
             // 模拟下载, 仅html5支持
             var aElement = document.createElement('a')
             aElement.setAttribute('href', download_url)
@@ -162,43 +175,38 @@
 
     function paginationLink(){
         // 翻页带条件　　TODO: 需要对翻页中的条件进行更改
-        var supplierId = "{% if supplier_id %}{{supplier_id}}{% endif %}"
-        var supplierName = "{% if supplier_name %}{{supplier_name}}{% endif %}"
-        var goodId = "{% if good_id %}{{good_id}}{% endif %}"
-        var goodName = "{% if good_name %}{{good_name}}{% endif %}"
-        var className = "{% if class_name %}{{class_name}}{% endif %}"
+        var userName = "{% if username %}{{username}}{% endif %}"
+        var fullName = "{% if fullname %}{{fullname}}{% endif %}"
+        var wareName = "{% if warename %}{{warename}}{% endif %}"
+        var action = "{% if action %}{{action}}{% endif %}"
         var startTime = "{% if start_time %}{{start_time}}{% endif %}"
         var endTime = "{% if end_time %}{{end_time}}{% endif %}"
-        if (supplierId || supplierName || goodId || goodName || className || startTime || endTime){
-            if (supplierId){
-                $("#searchWarehouseSupplierId").val(supplierId)
+        if (userName || fullName || wareName || action || startTime || endTime){
+            if (userName){
+                $("#searchHistoryUserName").val(userName)
             }
-            if (supplierName){
-                $("#searchWarehouseSupplierName").val(supplierName)
+            if (fullName){
+                $("#searchHistoryFullName").val(fullName)
             }
-            if (goodId){
-                $("#searchWarehouseGoodId").val(goodId)
+            if (wareName){
+                $("#searchHistoryWareName").val(wareName)
             }
-            if (goodName){
-                $("#searchWarehouseGoodName").val(goodName)
-            }
-            if (className){
-                $("#searchWarehouseClassName").val(className)
+            if (action){
+                $("#searchHistoryAction").val(action)
             }
             if (startTime){
-                $("#searchWarehouseStartTime").val(startTime)
+                $("#searchHistoryStartTime").val(startTime)
             }
             if (endTime){
-                $("#searchWarehouseEndTime").val(endTime)
+                $("#searchHistoryEndTime").val(endTime)
             }
             var page_items_a = $(".pagination>.page-item>a")
             for(var i=0; i<page_items_a.length; i++){
                 var origin_href = page_items_a[i].getAttribute("href")
-                page_items_a[i].setAttribute("href", origin_href + "?supplierId=" + supplierId +
-                                                                    "&supplierName=" + supplierName +
-                                                                    "&goodId=" + goodId +
-                                                                    "&goodName=" + goodName +
-                                                                    "&className=" + className +
+                page_items_a[i].setAttribute("href", origin_href + "?userName=" + userName +
+                                                                    "&fullName=" + fullName +
+                                                                    "&wareName=" + wareName +
+                                                                    "&action=" + action +
                                                                     "&startTime=" + startTime +
                                                                     "&endTime=" + endTime)
             }
