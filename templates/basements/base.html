@@ -31,6 +31,7 @@
 </head>
 
 <body>
+    {# 页面主内容区 #}
     {% block body %}{% endblock %}
     <!-- JavaScript files-->
     <script src="{%static 'vendor/jquery/jquery.min.js' %}"></script>
@@ -45,6 +46,6 @@
 </body>
 {# 自定义工具集 #}
 <script src="{% static 'js/common_tools.js' %}"></script>
+{# 页面的核心js区 #}
 {% block base_script %}{% endblock %}
-
 </html>

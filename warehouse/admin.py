@@ -11,10 +11,11 @@ class ClassificationModelAdmin(admin.ModelAdmin):
 
 @admin.register(Supplier)
 class SupplierModelAdmin(admin.ModelAdmin):
-    search_fields = ("suplier_id", "supplier_name")
-    sortable_by = ("id",)
-    list_display = ("id", "supplier_id", "supplier_name", "is_deleted", "short_remark")
-    list_display_links = ("id", "supplier_id", "supplier_name")
+    pass
+    # search_fields = ("suplier_id", "supplier_name")
+    # sortable_by = ("id",)
+    # list_display = ("id", "supplier_id", "supplier_name", "is_deleted", "short_remark")
+    # list_display_links = ("id", "supplier_id", "supplier_name")
 
 
 @admin.register(Warehouse)

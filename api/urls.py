@@ -5,5 +5,5 @@ from . import views
 app_name = "api"
 
 urlpatterns = [
-    path("history/", views.api_current_user_history, name="current_user_history"),
+    path("user_history/", views.api_current_user_history, name="current_user_history"),
 ]

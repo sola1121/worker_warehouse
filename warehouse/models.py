@@ -20,7 +20,9 @@ class Supplier(models.Model):
         return "{} - {}".format(self.supplier_id, self.supplier_name)
     
     def short_remark(self):
-        return str(self.remark[:16]) + "..."
+        if len(str(self.remark)) > 16:
+            return str(self.remark[:16]) + "..."
+        return str(self.remark)
 
     def get_model_name(self):
         return "Supplier"
@@ -42,7 +44,9 @@ class Classification(models.Model):
         return self.class_name
     
     def short_remark(self):
-        return str(self.remark[:16]) + "..."
+        if len(str(self.remark)) > 16:
+            return str(self.remark[:16]) + "..."
+        return str(self.remark)
 
     def get_model_name(self):
         return "Classification"
@@ -74,7 +78,9 @@ class Warehouse(models.Model):
         return "{} - {}".format(self.good_id, self.good_name)
 
     def short_remark(self):
-        return str(self.remark[:16]) + "..."
+        if len(str(self.remark)) > 16:
+            return str(self.remark[:16]) + "..."
+        return str(self.remark)
 
     def get_model_name(self):
         return "Warehouse"
@@ -107,7 +113,9 @@ class InWarehouse(models.Model):
         return "{} - {}".format(self.good_id, self.good_name)
 
     def short_remark(self):
-        return str(self.remark[:16]) + "..."
+        if len(str(self.remark)) > 16:
+            return str(self.remark[:16]) + "..."
+        return str(self.remark)
 
     def get_model_name(self):
         return "InWarehouse"
@@ -140,7 +148,9 @@ class OutWareHouse(models.Model):
         return "{} - {}".format(self.good_id, self.good_name)
 
     def short_remark(self):
-        return str(self.remark[:16]) + "..."
+        if len(str(self.remark)) > 16:
+            return str(self.remark[:16]) + "..."
+        return str(self.remark)
 
     def get_model_name(self):
         return "OutWarehouse"
@@ -175,8 +185,10 @@ class Sale(models.Model):
         return "{} - {}".format(self.good_id, self.good_name)
 
     def short_remark(self):
-        return str(self.remark[:16]) + "..."
-
+        if len(str(self.remark)) > 16:
+            return str(self.remark[:16]) + "..."
+        return str(self.remark)
+    
     def get_model_name(self):
         return "Sale"
 

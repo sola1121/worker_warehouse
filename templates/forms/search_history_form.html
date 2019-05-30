@@ -15,7 +15,7 @@
         <div class="col-md-2">
             <label class="sr-only" for="searchHistoryWareName">影响的对象</label>
             <select class="form-control mb-2" id="searchHistoryWareName">
-                <option value="">选择查询对象</option>
+                <option value="">无查询对象</option>
                 {% if select_warehouse_tag %}
                     {% for key, value in select_warehouse_tag.items %}
                         <option value="{{key}}">{{value}}</option>
@@ -28,7 +28,7 @@
         <div class="col-md-1">
             <label class="sr-only" for="searchHistoryAction">动作</label>
             <select class="form-control mb-2" id="searchHistoryAction">
-                <option value="">选择动作</option>
+                <option value="">无动作</option>
                 {% if select_action_tag %}
                     {% for key, value in select_action_tag.items %}
                         <option value="{{key}}">{{value}}</option>

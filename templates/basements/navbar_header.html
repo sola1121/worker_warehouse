@@ -17,80 +17,44 @@
                 <!-- Navbar Menu -->
                 <ul class="nav-menu list-unstyled d-flex flex-md-row align-items-md-center">
                     <!-- User Name -->
-                    <div class="nav-item">
-                        <div class="dropdown">
-                            Welcome
-                            {% if request.user.is_superuser %}
-                            Superuser
-                            {% endif %}
-                            &nbsp;-&nbsp;
-                            <button class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                {{ request.user.username }}
-                            </button>
-                            <div class="dropdown-menu pt-1 pb-1" aria-labelledby="dropdownMenuLink">
-                                {% if request.user.full_name %}
-                                <li class="dropdown-item"><i class="fa fa-user bg-green"></i> {{ request.user.full_name }}</li>
-                                {% endif %}                                
-                                {% if request.user.email %}
-                                <li class="dropdown-item"><i class="fa fa-envelope-o bg-blue"></i> {{ request.user.email }}</li>
-                                {% endif %}                                
-                                {% if request.user.phone %}
-                                <li class="dropdown-item"><i class="fa fa-mobile bg-orange"></i> {{ request.user.phone }}</li>
+                    <div class="nav-item dropdown">
+                        <a class="btn btn-dark btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {{ request.user.username }}
+                        </a>
+                        <div class="dropdown-menu pt-1 pb-1" aria-labelledby="dropdownMenuLink">
+                            <li class="dropdown-item">
+                                <i class="fa fa-star-o bg-red"></i> 
+                                {% if request.user.is_superuser %}
+                                <span class="text-danger">超级用户</span>
+                                {% else %}
+                                <span class="text-primary">普通用户</span>
                                 {% endif %}
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item active" href="{% url 'account:account_change' %}">更换密码</a>
-                            </div>
+                            </li>
+                            {% if request.user.full_name %}
+                            <li class="dropdown-item"><i class="fa fa-user bg-green"></i> {{ request.user.full_name }}</li>
+                            {% endif %}                                
+                            {% if request.user.email %}
+                            <li class="dropdown-item"><i class="fa fa-envelope-o bg-blue"></i> {{ request.user.email }}</li>
+                            {% endif %}                                
+                            {% if request.user.phone %}
+                            <li class="dropdown-item"><i class="fa fa-mobile bg-orange"></i> {{ request.user.phone }}</li>
+                            {% endif %}
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item active" href="{% url 'account:account_change' %}">更换密码</a>
                         </div>
                     </div>
-
-
-
-                    <li class="nav-item dropdown">
-                        <a rel="nofollow" data-target="#" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle"><span class="d-none d-sm-inline-block">文字信息</span></a>
-                        <ul aria-labelledby="languages" class="dropdown-menu">
-                            <li><a rel="nofollow" href="#" class="dropdown-item"> German</a></li>
-                            <li><a rel="nofollow" href="#" class="dropdown-item">  French</a></li>
-                        </ul>
-                    </li>
-
-
+                    &nbsp;
 
                     <!-- Notifications-->
-                    <li class="nav-item dropdown"> <a id="notifications" rel="nofollow" data-target="#" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link">
-                        <i class="fa fa-bell-o"></i><span class="badge bg-red badge-corner">12</span></a>
-                        <ul aria-labelledby="notifications" class="dropdown-menu">
-                            <li><a rel="nofollow" href="#" class="dropdown-item">
-                                    <div class="notification">
-                                        <div class="notification-content"><i class="fa fa-envelope bg-green"></i>You
-                                            have 6 new messages </div>
-                                        <div class="notification-time"><small>4 minutes ago</small></div>
-                                    </div>
-                                </a></li>
-                            <li><a rel="nofollow" href="#" class="dropdown-item">
-                                    <div class="notification">
-                                        <div class="notification-content"><i class="fa fa-twitter bg-blue"></i>You
-                                            have 2 followers</div>
-                                        <div class="notification-time"><small>4 minutes ago</small></div>
-                                    </div>
-                                </a></li>
-                            <li><a rel="nofollow" href="#" class="dropdown-item">
-                                    <div class="notification">
-                                        <div class="notification-content"><i class="fa fa-upload bg-orange"></i>Server
-                                            Rebooted</div>
-                                        <div class="notification-time"><small>4 minutes ago</small></div>
-                                    </div>
-                                </a></li>
-                            <li><a rel="nofollow" href="#" class="dropdown-item">
-                                    <div class="notification">
-                                        <div class="notification-content"><i class="fa fa-twitter bg-blue"></i>You
-                                            have 2 followers</div>
-                                        <div class="notification-time"><small>10 minutes ago</small></div>
-                                    </div>
-                                </a></li>
-                            <li><a rel="nofollow" href="#" class="dropdown-item all-notifications text-center">
-                                    <strong>view all notifications </strong></a></li>
+                    <li class="nav-item dropdown"> 
+                        <a id="notifications" rel="nofollow" data-target="#apiGetUserHistory" href="#" data-toggle="dropdown"  onclick="apiRequestHistory()" aria-haspopup="true" aria-expanded="false" class="nav-link">
+                            历史 <i class="fa fa-street-view"></i>
+                        </a>
+                        <ul aria-labelledby="notifications" class="dropdown-menu" id="apiGetUserHistory">
+                            <!-- 这里显示用户历史信息的下拉 -->
                         </ul>
-                    </li>
+                    </li> 
+                    &nbsp;
                     <!-- Logout -->
                     <li class="nav-item">
                         <a href="{% url 'account:account_logout' %}" class="nav-link logout"> 
@@ -102,3 +66,103 @@
         </div>
     </nav>
 </header>
+
+<script>
+    function historyShow(historyJson){
+        /*
+            <li>
+                <a rel="nofollow" href="#" class="dropdown-item">
+                    <div class="notification">
+                        <div class="notification-content">
+                            <i class="fa fa-clock-o"></i>You have 6 new messages 
+                        </div>
+                        <div class="notification-time"><small>4 minutes ago</small></div>
+                    </div>
+                </a>
+            </li>
+
+            <li>
+                <a rel="nofollow" href="" class="dropdown-item all-notifications text-center">
+                    <strong>查看自己的所有历史 </strong>
+                </a>
+            </li>
+        */
+        function createNode(pattern, msg, time){
+            var newLi = document.createElement("li")
+            
+            var newDivNot = document.createElement("div")
+            newDivNot.setAttribute("class", "notification")
+            var newDivNotCon = document.createElement("div")
+            newDivNotCon.setAttribute("class", "notification-content")
+            var newDivNotTim = document.createElement("div")
+            newDivNotTim.setAttribute("class", "notification-time")
+    
+            var newAMsg = document.createElement("a")
+            newAMsg.setAttribute("rel", "nofollow")
+            newAMsg.setAttribute("class", "dropdown-item")
+            switch (String(pattern).toUpperCase()){
+                case "ERROR":
+                    newDivNotCon.innerHTML = '<span class="text-danger">error</span>'
+                    newDivNot.appendChild(newDivNotCon)
+                    newAMsg.appendChild(newDivNot)
+                    newLi.appendChild(newAMsg)
+                    return newLi
+                break
+                case "MSG":
+                    newDivNotCon.innerHTML = '<i class="fa fa-clock-o bg-grey"></i>' + msg
+                    newDivNotTim.innerHTML = "<small>" + time + "</small>"
+                    newDivNot.appendChild(newDivNotCon)
+                    newDivNot.appendChild(newDivNotTim)
+                    newAMsg.appendChild(newDivNot)
+                    newLi.appendChild(newAMsg)
+                    return newLi
+                break
+                case "BUTTON":
+                    newAMsg.setAttribute("class", "dropdown-item all-notifications text-center")
+                    newAMsg.setAttribute("href", "{% url 'account:history_home' %}1/?userName={{request.user.username}}&fullName=&wareName=&action=&startTime=&endTime=")
+                    newAMsg.innerHTML = "<strong>查看自己的所有历史</strong>" 
+                    newLi.appendChild(newAMsg)
+                    return newLi
+                break
+            }
+        }
+        var obj = document.getElementById("apiGetUserHistory")
+        obj.innerHTML = ""
+        
+        if (historyJson["back_msg"] == "OK"){
+            if (historyJson["time_list"].length != historyJson["msg_list"].length){
+                obj.appendChild(createNode("error"))
+                obj.appendChild(createNode("button"))
+            } else {
+                var time_list = historyJson["time_list"]
+                var msg_list = historyJson["msg_list"]
+                for(var i=0; i<time_list.length; i++){
+                    obj.appendChild(createNode("msg", msg_list[i], time_list[i]))
+                }
+                obj.appendChild(createNode("button"))
+
+            }
+        } else {
+            obj.appendChild(createNode("error"))
+            obj.appendChild(createNode("button"))
+        }
+    }
+
+
+    function apiRequestHistory(){
+        var xhr = new XMLHttpRequest()
+        // 监控状态, 当到达第四步, 并成功时
+        xhr.onreadystatechange = function(){
+            if (xhr.readyState == 4 && xhr.status == 200){
+                var res_text = xhr.responseText
+                var res_json = JSON.parse(res_text)
+                // 在页面上显示
+                historyShow(res_json)
+            }
+        }
+        xhr.open("POST", "{% url 'api:current_user_history' %}")
+        /* 普通的POST传递数据 */
+        xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded")
+        xhr.send("csrfmiddlewaretoken={{ csrf_token }}&user_id={{request.user.id}}")
+    }
+</script>

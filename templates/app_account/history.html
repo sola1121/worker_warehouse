@@ -103,7 +103,6 @@
 
     function buttonSearch(){
         // 搜索按钮功能赋予
-        // FIXME: 需要对select标签的选择值进行过滤
         $("#historySearch").on("click", function (evt) {
             var userName = $("#searchHistoryUserName").val()
             var fullName = $("#searchHistoryFullName").val()
@@ -111,20 +110,18 @@
             var action = $("#searchHistoryAction").val()
             var startTime = $("#searchHistoryStartTime").val()
             var endTime = $("#searchHistoryEndTime").val()
-            // window.location.href = "{% url 'account:history_home' %}1/?userName=" + userName +
-            //                                                          "&fullName=" + fullName +
-            //                                                          "&wareName=" + wareName +
-            //                                                          "&action=" + action +
-            //                                                          "&startTime" + startTime +
-            //                                                          "&endTime=" + endTime
-
-            console.info(action)
+            window.location.href = "{% url 'account:history_home' %}1/?userName=" + userName +
+                                                                     "&fullName=" + fullName +
+                                                                     "&wareName=" + wareName +
+                                                                     "&action=" + action +
+                                                                     "&startTime=" + startTime +
+                                                                     "&endTime=" + endTime
             })
         }
     
 
     function buttonDownload(){
-        // 文件下载功能  TODO:相应的参数应该替换掉
+        // 文件下载功能
         var objectDictWare = {
             "Supplier": "供应商",
             "Classification": "储物分类",
@@ -145,12 +142,12 @@
             var action = getQueryString("action")
             var startTime = getQueryString("startTime")
             var endTime = getQueryString("endTime")
-            var download_url = "{% url 'warehouse:warehouse_download' %}?userName=" + userName + 
-                                                                        "&fullName=" + fullName +
-                                                                        "&wareName=" + wareName +
-                                                                        "&action=" + action +
-                                                                        "&startTime=" + startTime +
-                                                                        "&endTime=" + endTime 
+            var download_url = "{% url 'account:history_download' %}?userName=" + userName + 
+                                                                   "&fullName=" + fullName +
+                                                                   "&wareName=" + wareName +
+                                                                   "&action=" + action +
+                                                                   "&startTime=" + startTime +
+                                                                   "&endTime=" + endTime 
             var filename = (userName || fullName || wareName || action || startTime || endTime)
                             ? "用户历史 - 账户名_" + userName + ", 姓名_" + fullName + ", 对象_" + objectDictWare[wareName] + 
                               ", 动作_" + objectDictAct[action] + ", 时间区间(" + startTime + ", " + endTime + ").xlsx" 

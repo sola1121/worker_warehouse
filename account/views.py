@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 
 from .models import User, History
-from warehouse.models import InWarehouse, OutWareHouse, Warehouse, Sale
+from warehouse.models import InWarehouse, OutWareHouse, Warehouse, Sale, Classification
 
 # Create your views here.
 
@@ -161,9 +161,15 @@ def history_download(request):
     file_sheet = file_wb.get_sheet_by_name(file_wb.sheetnames[0])
     file_sheet.title = "用户历史"
     # TODO: 这里下载
-    file_sheet.append([])
-    for info in histories:
-        file_sheet.append([])
+    file_sheet.append(["历史时间", "账户", "姓名", "动作", "影响"])
+    for info in histories.order_by("-create_date"):
+        the_user = User.objects.get(id=info.user_id)
+        file_sheet.append([datetime.datetime.strftime(info.create_date, "%Y-%m-%d %H:%M:%S"),
+                           the_user.username, the_user.full_name, dict(History.ACTION_RECORD).get(info.action, "error"),
+                           "{the_model_cn} {the_object_cn}".format(
+                               the_model_cn=dict(History.WARE_RECORD).get(info.affect_ware, "error"), 
+                               the_object_cn=eval("%s.objects.filter(id=%s).first().__str__()"%(info.affect_ware, info.affect_object_id)))
+                           ])
     response = HttpResponse(save_virtual_workbook(file_wb))
     response["Content-Type"] = "application/vnd.ms-excel"
     response["Content-Disposition"] = "attachment;filename=\"%s\"" % filename

@@ -14,4 +14,5 @@ urlpatterns = [
     # 用户历史浏览
     path("history/", views.history, name="history_home"),
     re_path(r"history/(?P<page>\d.*?)/", views.history),
+    path("history/dowload/", views.history_download, name="history_download"),
 ]

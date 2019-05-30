@@ -75,3 +75,32 @@ class History(models.Model):
         verbose_name = "用户操作记录"
         verbose_name_plural = "用户操作记录"
         ordering = ["-id", "-create_date"]
+
+
+class Notification(models.Model):
+    """用户向超级用户发送消息"""
+    LEVEL_RECORD = [
+        ("REGISTRATION", "注册请求"),
+        ("MESSAGE", "普通消息")
+    ]
+
+    id = models.AutoField(primary_key=True)
+    user_id = models.IntegerField(verbose_name="用户主键", null=True)
+    level = models.CharField(verbose_name="消息级别", max_length=16, choices=LEVEL_RECORD)
+    message = models.TextField(verbose_name="消息内容")
+    create_date = models.DateTimeField(verbose_name="消息发出时间", auto_now_add=True)
+    is_finished = models.BooleanField(verbose_name="是否处理完成", default=False)
+
+    def __str__(self):
+        return "{} - {}- {}".format(self.create_date, self.level, self.is_finished)
+
+    def short_message(self):
+        if len(str(self.message)) > 16:
+            return str(self.message)[:16]
+        return (str(self.message))
+
+    class Meta:
+        db_table = "w_notification"
+        verbose_name = "用户消息记录"
+        verbose_name_plural = "用户消息记录"
+        ordering = ["-id", "-create_date"]
