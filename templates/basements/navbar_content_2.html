@@ -9,9 +9,10 @@
     user_superuser = {% if request.user.is_superuser %} true {% else %} false {% endif %}
     active_navbar = "{{ active_navbar }}"
     // 对于侧边内容的选中
-    // TODO: 增加侧边内容
+    // NOTE: 增加侧边内容
     var side_navbar_dict = {"index": "nv-index", "supplier": "nv-supplier", "classification": "nv-classification", 
-                            "warehouse": "nv-warehouse", "history": "nv-history"}
+                            "warehouse": "nv-warehouse", "history": "nv-history", "inwarehouse": "nv-nv-inWarehouse",
+                            "outwarehouse": "nv-outWarehouse", "sale": "nv-sale"}
     var side_navbar = document.getElementById(side_navbar_dict[active_navbar])
     side_navbar.setAttribute("class", "active")
     // 对于breadcrumb

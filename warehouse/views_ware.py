@@ -50,9 +50,6 @@ class RequestQueryHandler:
             logging.error(ex)
             return render(request, "exceptions/500.html", status=500)
 
-### 入库相关 ###
-
-### 出库相关 ###
 
 ### 在库相关 ###
 
@@ -191,3 +188,29 @@ def warehouse_download(request):
     response["Content-Type"] = "application/vnd.ms-excel"
     response["Content-Disposition"] = "attachment;filename=\"%s\"" % filename
     return response
+
+
+### 入库相关 ###
+
+def in_warehouse(request, page=1):
+    return render(request, 
+                  "app_warehouse/in_warehouse.html")
+
+
+def in_warehouse_modify(request):
+    pass
+
+
+def in_warehouse_delete(request):
+    pass
+
+
+def in_warehouse_check(request):
+    pass
+
+
+def in_warehouse_download(request):
+    pass
+
+
+### 出库相关 ###

@@ -98,6 +98,7 @@ class InWarehouse(models.Model):
     good_name = models.CharField(verbose_name="储物名称", max_length=64)
     # 分类外键
     classification = models.ForeignKey("Classification", null=True, blank=True, related_name="inWarehouse", on_delete=models.SET_NULL)
+    person_liable = models.CharField(verbose_name="负责人", max_length=128, default="未指定")
     spec = models.CharField(verbose_name="规格/型号", max_length=32, default="未定义")
     in_amount = models.IntegerField(verbose_name="数量", default=0)
     unit = models.CharField(verbose_name="计件单位", max_length=32, default="未定义")
@@ -133,6 +134,8 @@ class OutWareHouse(models.Model):
     good_name = models.CharField(verbose_name="储物名称", max_length=64)
     # 分类外键
     classification = models.ForeignKey("Classification", null=True, blank=True, related_name="outWarehouse", on_delete=models.SET_NULL)
+    person_liable = models.CharField(verbose_name="负责人", max_length=128, default="未指定")
+    recipient = models.CharField(verbose_name="接收方", max_length=64, default="无描述")
     spec = models.CharField(verbose_name="规格/型号", max_length=32, default="未定义")
     out_amount = models.IntegerField(verbose_name="数量", default=0)
     unit = models.CharField(verbose_name="计件单位", max_length=32, default="未定义")

@@ -1,0 +1,76 @@
+{% extends "basements/base.html" %}
+
+{% block head_title %}{{ head_title }}{% endblock %}
+
+{% block body %}
+{% include "basements/navbar_header.html" %}
+{% include "basements/navbar_content_1.html" %}
+
+<div class="card">
+    <div class="card-body">
+
+{# 添加和修改表单, 供应商 #}
+        <div class="container" style="width: 40%;">
+            <form id="supplierAddForm">
+                {{ form.as_p }}
+                <button id="backend-add-confirm" type="button" class="btn btn-primary">确认保存</button>
+                <button id="backend-add-anothor" type="button" class="btn btn-primary">保存并添加另一个</button>
+                <a class="btn btn-info float-right" href="{% url 'warehouse:supplier_home' %}">返回</a>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+{% include "basements/navbar_content_2.html" %}
+{% endblock %}
+
+{% block base_script %}
+<script>
+    window.onload= function(){
+        initThisPage.initButton()
+    }
+
+    var initThisPage = {
+        initButton: function(){buttonAddConfirm(); buttonAddAnother()}
+    }
+
+    function buttonAddConfirm(){
+        // 添加一个并返回浏览页
+        $("#backend-add-confirm").on("click", function(){
+            asyncPost("{% url 'warehouse:supplier_home' %}")
+        })
+    }
+
+    function buttonAddAnother(){
+        // 添加一个依然保持在当前
+        $("#backend-add-anothor").on("click", function(){
+            asyncPost("{% url 'warehouse:supplier_modify' %}")
+        })
+    }
+
+    function asyncPost(next_page){
+        $.post(
+            "{% url 'warehouse:supplier_modify' %}",
+            {
+                "origin_supplier_id": getQueryString("supplierId"), 
+                "supplier_id": $("#backend-supplierId").val(), 
+                "supplier_name": $("#backend-supplierName").val(), 
+                "remark": $("#backend-remark").val()
+            },
+            function(reback, status){
+                if (reback["back_msg"] == "OK"){
+                    window.alert("状态码 " + status + ", 成功保存")
+                    if (next_page){
+                        window.location.href = next_page
+                    }
+                } else {
+                    window.alert("通信状态" + status + " 但是出现错误.\n" + reback["back_msg"])
+                }
+            },
+            "json"
+        )
+    }
+
+</script>
+{% endblock %}

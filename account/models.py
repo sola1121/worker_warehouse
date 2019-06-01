@@ -30,11 +30,12 @@ class History(models.Model):
         ("Sale", "销售单"),
     ]
 
-    CREATE, MODIFY, DELETE = "CREATE", "MODIFY", "DELETE"
+    CREATE, MODIFY, DELETE, FINISH = "CREATE", "MODIFY", "DELETE", "FINISH"
     ACTION_RECORD = [
         (CREATE, "创建"),
         (MODIFY, "修改"),
         (DELETE, "删除"),
+        (FINISH, "完成")
     ]
 
     id = models.AutoField(primary_key=True)

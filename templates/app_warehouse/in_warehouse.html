@@ -1,0 +1,369 @@
+{% extends "basements/base.html" %}
+
+{% block head_title %}入库单管理{% endblock %}
+
+{% block body %}
+{% include "basements/navbar_header.html" %}
+{% include "basements/navbar_content_1.html" %}
+
+<div class="container-fluid">
+{# 添加和保存按钮, 入库单 #}
+    <div class="row">
+        <div class="col-md-4 col-sm-4">
+            <button type="button" id="backend-add" class="btn btn-primary"><i class="fa fa-plus-square"></i>创建入库单</button>
+            <button type="button" id="backend-download" class="btn btn-primary"><i class="fa fa-download"></i>下载当前结果</button>
+        </div>
+        <div class="col-md-8 col-sm-8">
+{# 搜索表单, 搜索入库单 #}
+            {% include "forms/search_in_warehouse_form.html" %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-condensed table-striped">
+                <thead>
+                    <tr>
+{# 显示不同的列表, 入库单 #}
+                        <th>#</th>
+                        <th>货物编号</th>
+                        <th>货物名称</th>
+                        <th>货物分类</th>
+                        <th>责任人</th>
+                        <th>供应商编号</th>
+                        <th>供应商名字</th>
+                        <th>规格/型号</th>
+                        <th>计件单位</th>
+                        <th>入库数量</th>
+                        <th>入库金额</th>
+                        <th>订单时间</th>
+                        <th>是否完成</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+{# 获取paginator中的数据, 供应商显示 #}
+                    {% for contact in pagetor %}
+                    <tr>
+                        <th class="backend-num-id" scope="row"></th>
+                        <th>{{contact.good_id|title}}</th>
+                        <th>{{contact.good_name}}</th>
+                        <th>{{contact.classification.class_name}}</th>
+                        <th>{{contact.person_liable}}</th>
+                        <th>{{contact.supplier.supplier_id|title}}</th>
+                        <th>{{contact.supplier.supplier_name}}</th>
+                        <th>{{contact.spec}}</th>
+                        <th>{{contact.unit}}</th>
+                        <th>{{contact.amount}}</th>
+                        <th>{{contact.price}}</th>
+                        <th>{{contact.update_date}}</th>
+                        <th><i class="fa {% if contact.is_finished %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i></th>
+                        <th class="backend-remark">
+                            {% if contact.remark %}
+                            <a href="#" onclick="remarkModal(this)" data-toggle="popover" modal-title="{{contact.person_liable}} - {{contact.good_id}}" title="{{contact.remark}}"></a>
+                            {% endif %}
+                        </th>
+                        <th>
+                            {# 入库单, 出库单, 销售单将会直接使用数据库主键 #}
+                            <button type="button" class="btn btn-success btn-sm backend-check" data-toggle="tooltip" data-placement="bottom" value_id="{{contact.id}}" title="完成入库" {% if contact.is_finished %}disabled{% endif %}><i class="fa fa-check"></i></button>
+                            <button type="button" class="btn btn-warning btn-sm backend-edit" data-toggle="tooltip" data-placement="bottom" value_id="{{contact.id}}" title="编辑内容"><i class="fa fa-edit"></i></button>
+                            <button type="button" class="btn btn-danger btn-sm backend-delete" data-toggle="tooltip" data-placement="bottom" value_id="{{contact.id}}" title="删除内容"><i class="fa fa-trash"></i></button>
+                        </th>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="remarkModalMessages" tabindex="-1" role="dialog" aria-labelledby="remarkModalMessages" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="remarkModalMessagesTitle">...</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body" id="remarkModalMessagesBody">
+                <div class="text-danger">Error</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="float-left ml-3">
+    <small>总数据量: {{pagetor.paginator.count}}, 页数: {{pagetor.paginator.num_pages}}</small>
+</div>
+
+<nav class="float-right mr-3" aria-label="Page navigation">
+{# 翻页按钮, 供应商 #}
+    <ul class="pagination">
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:inwarehouse_home' %}1/">&laquo;&laquo;</a></li>
+        {% if pagetor.has_previous %}
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:inwarehouse_home' %}{{pagetor.previous_page_number}}/">{{pagetor.previous_page_number}}</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{pagetor.number}}</span></li>
+        {% if pagetor.has_next %}
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:inwarehouse_home' %}{{pagetor.next_page_number}}/">{{pagetor.next_page_number}}</a></li>
+        {% endif %}
+        <li class="page-item"><a class="page-link" href="{% url 'warehouse:inwarehouse_home' %}{{pagetor.paginator.num_pages}}/">&raquo;&raquo;</a></li>
+    </ul>
+</nav>
+
+{% include "basements/navbar_content_2.html" %}
+{% endblock %}
+
+{% block base_script %}
+<script>
+    window.onload = function(){
+        thisPageInit.initInput()
+        thisPageInit.initButton()
+        thisPageInit.initContent()
+        thisPageInit.initPagination()
+    }
+
+    var thisPageInit = {
+        initInput: function() {inputTime(); },
+        initButton: function (){buttonSearch(); buttonDownload(); buttonAdd(); buttonEdit(); buttonDelete(); buttonCheck()},
+        initContent: function(){itemNum(); remarkShotcut()},
+        initPagination: function(){paginationLink()},
+    }
+
+
+    function inputTime(){
+        // 搜索框日期显示初始化
+        var datepickerSetting = {
+            showMonthAfterYear:true, //年在前，月在后
+            yearSuffix:"年",	     //添加后缀年
+            prevText:"上一月",       //鼠标放在翻月按钮上显示的文字
+            nextText:"下一月",
+            monthNames:["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月",],   //以中文显示月份
+            dayNamesMin:["日","一","二","三","四","五","六",], //以中文显示每周（必须按此顺序，否则日期出错）
+            dateFormat:"yy-mm-dd",   //在文本框中显示日期的格式 
+            changeYear: true,   // 是否允许直接更改年
+        }
+        $("#searchInWarehouseStartTime").datepicker(datepickerSetting)
+        $("#searchInWarehouseEndTime").datepicker(datepickerSetting)
+    }
+
+
+    function buttonSearch(){
+        // 搜索按钮功能赋予
+        $("#inWarehouseSearch").on("click", function (evt) {
+            var supplierId = $("#searchInWarehouseSupplierId").val()
+            var supplierName = $("#searchInWarehouseSupplierName").val()
+            var goodId = $("#searchInWarehouseGoodId").val()
+            var goodName = $("#searchInWarehouseGoodNme").val()
+            var className = $("#searchInWarehouseClassName").val()
+            var personLiable = $("#searchInWarehousePersonLiable").val()
+            var isFinished = $("#searchInWarehouseIsFinished").val()
+            var startTime = $("#searchInWarehouseStartTime").val()
+            var endTime = $("#searchInWarehouseEndTime").val()
+            window.location.href = "{% url 'warehouse:inwarehouse_home' %}1/?supplierId=" + supplierId + 
+                                                                           "&supplierName=" + supplierName +
+                                                                           "&goodId=" + goodId + 
+                                                                           "&goodName=" + goodName + 
+                                                                           "&className=" + className +
+                                                                           "&personLiable=" + personLiable +
+                                                                           "&isFinished=" + isFinished +
+                                                                           "&startTime=" + startTime +
+                                                                           "&endTime=" + endTime
+        })
+    }
+    
+
+    function buttonDownload(){
+        // 文件下载功能
+        $("#backend-download").on("click", function(evt){
+            var supplierId = $("#searchInWarehouseSupplierId").val()
+            var supplierName = $("#searchInWarehouseSupplierName").val()
+            var goodId = $("#searchInWarehouseGoodId").val()
+            var goodName = $("#searchInWarehouseGoodNme").val()
+            var className = $("#searchInWarehouseClassName").val()
+            var personLiable = $("#searchInWarehousePersonLiable").val()
+            var isFinished = $("#searchInWarehouseIsFinished").val()
+            var startTime = $("#searchInWarehouseStartTime").val()
+            var endTime = $("#searchInWarehouseEndTime").val()
+            var download_url = "{% url 'warehouse:inwarehouse_download' %}?supplierId=" + supplierId + 
+                                                                         "&supplierName=" + supplierName +
+                                                                         "&goodId=" + goodId + 
+                                                                         "&goodName=" + goodName + 
+                                                                         "&className=" + className +
+                                                                         "&personLiable=" + personLiable +
+                                                                         "&isFinished=" + isFinished +
+                                                                         "&startTime=" + startTime +
+                                                                         "&endTime=" + endTime
+            var filename = (supplierId || supplierName || goodId || goodName || className || personLiable || isFinished || startTime || endTime)
+                            ? "入库单 - 货物编号_" + goodId + ", 货物名称_" + goodName + ", 分类_" + className + 
+                              ", 供应商编号_" + supplierId + ", 供应商名称_" + supplierName + ", 责任人_" + personLiable + ", 是否完成_" + isFinished +
+                              "时间区间(" + startTime + ", " + endTime + ").xlsx" 
+                            : "入库单.xlsx"
+            // 模拟下载, 仅htm5支持
+            var aElement = document.createElement('a')
+            aElement.setAttribute('href', download_url)
+            aElement.setAttribute('download', filename)
+            aElement.click()
+        })
+    }
+
+
+    function buttonAdd(){
+        // 添加按钮功能赋予
+        $("#backend-add").on("click", function(evt){
+            window.location.href = "{% url 'warehouse:inwarehouse_modify' %}"
+        })
+    }
+
+    
+    function buttonEdit(){
+        // 编辑按钮功能赋予
+        $(".backend-edit").on("click", function(evt){
+            var id = this.getAttribute("value_id")
+            window.location.href = "{% url 'warehouse:inwarehouse_modify' %}?id=" + id 
+        })
+    }
+
+
+    function buttonDelete(){
+        // 删除按钮功能赋予
+        $(".backend-delete").on("click", function(evt){
+            var id = this.getAttribute("value_id")
+            var flag = window.confirm("确定删除订单的内容么?")
+            if (!flag){return}
+            $.ajax({
+                url: "{% url 'warehouse:inwarehouse_delete' %}",
+                type: "post",
+                async: true,
+                dataType: "json",
+                data: {id: id},
+                success: function(reback){
+                    if (reback["back_msg"]== "OK"){
+                        window.location.reload()
+                    } else {
+                        window.alert(reback["back_msg"])
+                    }
+                }
+            })
+        })
+    }
+
+
+    function buttonCheck(){
+        // TODO: 确认完成按钮功能赋予
+        $(".backend-check").on("click", function(evt){
+            var id = this.getAttribute("value_id")
+            var flag = window.confirm("确定将订单完成么?")
+            if (!flag){return}
+            $.ajax({
+                url: "{% url 'warehouse:inwarehouse_check' %}",
+                type: "post",
+                async: true,
+                dataType: "json",
+                data: {id: id},
+                success: function(reback){
+                    if (reback["back_msg"]=="OK"){
+                        this.setAttribute("disabled", true)
+                    } else {
+                        window.alert(reback["back_msg"])
+                    }
+                }
+            })
+        })
+    }
+
+
+    function itemNum(){
+        // 内容编号
+        var number_ids = $(".backend-num-id")
+        for (var i=0; i<number_ids.length; i++){
+            number_ids[i].textContent = i+1
+        }
+    }
+
+
+    function remarkShotcut(){
+        // 备注截取
+        var remark_texts = $(".backend-remark").children()
+        if (remark_texts.length > 0){
+            for (var i=0; i<remark_texts.length; i++){
+                var obj_title = remark_texts[i].getAttribute("title")
+                if (obj_title.length > 8){
+                    remark_texts[i].textContent = obj_title.slice(0, 8) + "..."
+                } else {
+                    remark_texts[i].textContent = obj_title
+                }
+            }
+        }
+    }
+
+    function remarkModal(obj){
+        // 备注Modal
+        $("#remarkModalMessagesTitle").html(obj.getAttribute("modal-title") + " - 备注内容")
+        $("#remarkModalMessagesBody").html(obj.getAttribute("title"))
+        $("#remarkModalMessages").modal("show")
+    }
+
+    function paginationLink(){
+        // 翻页带条件
+        var supplierId = "{% if supplier_id %}{{supplier_id}}{% endif %}"
+        var supplierName = "{% if supplier_name %}{{supplier_name}}{% endif %}"
+        var goodId = "{% if good_id %}{{good_id}}{% endif %}"
+        var goodName = "{% if good_name %}{{good_name}}{% endif %}"
+        var className = "{% if class_name %}{{class_name}}{% endif %}"
+        var personLiable = "{% if person_liable %}{{person_liable}}{% endif %}"
+        var isFinished = "{% if is_finished %}1{% else %}0{% endif %}"  // TODO: 根据结果可能需要修改
+        var startTime = "{% if start_time %}{{start_time}}{% endif %}"
+        var endTime = "{% if end_time %}{{end_time}}{% endif %}"
+        if (supplierId || supplierName || goodId || goodName || className || personLiable || isFinished || startTime || endTime){
+            if (supplierId){
+                $("#searchInWarehouseSupplierId").val(supplierId)
+            }
+            if (supplierName){
+                $("#searchInWarehouseSupplierName").val(supplierName)
+            }
+            if (goodId){
+                $("#searchInWarehouseGoodId").val(goodId)
+            }
+            if (goodName){
+                $("#searchInWarehouseGoodName").val(goodName)
+            }
+            if (className){
+                $("#searchInWarehouseClassName").val(className)
+            }
+            if (personLiable){
+                $("#searchInWarehousePersonLiable").val(personLiable)
+            }
+            if (isFinished){
+                $("#searchInWarehouseIsFinished").val(isFinished)
+            }
+            if (startTime){
+                $("#searchInWarehouseStartTime").val(startTime)
+            }
+            if (endtime){
+                $("#searchInWarehouseEndTime").val(endTime)
+            }
+            var page_items_a = $(".pagination>.page-item>a")
+            for(var i=0; i<page_items_a.length; i++){
+                var origin_href = page_items_a[i].getAttribute("href")
+                page_items_a[i].setAttribute("href", origin_href + "?supplierId=" + supplierId + 
+                                                                   "&supplierName=" + supplierName +
+                                                                   "&goodId=" + goodId +
+                                                                   "&goodName=" + goodName +
+                                                                   "&className=" + className + 
+                                                                   "&personLiable=" + personLiable + 
+                                                                   "&isFinished=" + isFinished +
+                                                                   "&startTime=" + startTime +
+                                                                   "&endTime=" + endTime
+                                    )
+            }
+        }
+    }
+
+</script>
+{% endblock %}

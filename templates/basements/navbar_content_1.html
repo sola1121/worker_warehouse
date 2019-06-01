@@ -8,12 +8,15 @@
             <li id="nv-index"><a href="{% url 'index:index_home' %}"> <i class="icon-home"></i>主页</a></li>
             <li id="nv-supplier"><a href="{% url 'warehouse:supplier_home' %}"> <i class="icon icon-user"></i>供应商管理</a></li>
             <li id="nv-classification"><a href="{% url 'warehouse:classification_home' %}"> <i class="icon icon-list-1"></i>物品种类管理</a></li>
-            <li id="nv-inWarehouse"><a href="charts.html"> <i class="icon-padnote"></i>入库单管理</a></li>
+            <li id="nv-inWarehouse"><a href="{% url 'warehouse:inwarehouse_home' %}"> <i class="icon-padnote"></i>入库单管理</a></li>
             <li id="nv-outWarehouse"><a href="forms.html"> <i class="icon-check"></i>出库单管理</a></li>
             <li id="nv-warehouse"><a href="{% url 'warehouse:warehouse_home' %}"> <i class="icon-grid"></i>在库货管理</a></li>
             <li id="nv-sale"><a href="forms.html"> <i class="icon icon-bill"></i>销售单管理</a></li>
             <li id="nv-history"><a href="{% url 'account:history_home' %}"> <i class="icon icon-clock"></i>用户历史记录</a></li>
             <li id="nv-database"><a href="#"> <i class="icon icon-website"></i>数据库管理</a></li>
+            {% if request.user.is_superuser is False %}
+            <li id="nv-notification"><a href="forms.html"> <i class="icon-paper-airplane"></i>联系管理员</a></li>
+            {% endif %}
     </nav>
 
     <div class="content-inner">
