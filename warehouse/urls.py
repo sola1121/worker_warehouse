@@ -32,7 +32,7 @@ urlpatterns = [
     path("inwarehouse/modify/", views_ware.in_warehouse_modify, name="inwarehouse_modify"),
     path("inwarehouse/delete/", views_ware.in_warehouse_delete, name="inwarehouse_delete"),
     path("inwarehouse/download/", views_ware.in_warehouse_download, name="inwarehouse_download"),
-    path("inwarehouse/check/", views_ware.in_warehouse_check, name="inwarhouse_check"),
+    path("inwarehouse/check/", views_ware.in_warehouse_check, name="inwarehouse_check"),
 
     # 出库单管理
 

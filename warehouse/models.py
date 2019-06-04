@@ -94,7 +94,7 @@ class Warehouse(models.Model):
 class InWarehouse(models.Model):
     """货物入库记录"""
     id = models.AutoField(primary_key=True)
-    good_id = models.CharField(verbose_name="储物编号", max_length=32, unique=True, null=False, db_index=True)
+    good_id = models.CharField(verbose_name="储物编号", max_length=32, null=False, db_index=True)
     good_name = models.CharField(verbose_name="储物名称", max_length=64)
     # 分类外键
     classification = models.ForeignKey("Classification", null=True, blank=True, related_name="inWarehouse", on_delete=models.SET_NULL)
@@ -111,7 +111,7 @@ class InWarehouse(models.Model):
     supplier = models.ForeignKey("Supplier", related_name="inWarehouse", on_delete=models.SET("数据删除"))
 
     def __str__(self):
-        return "{} - {}".format(self.good_id, self.good_name)
+        return "<入库单> {} - {}".format(self.good_id, self.good_name)
 
     def short_remark(self):
         if len(str(self.remark)) > 16:
@@ -130,7 +130,7 @@ class InWarehouse(models.Model):
 class OutWareHouse(models.Model):
     """货物出库记录"""
     id = models.AutoField(primary_key=True)
-    good_id = models.CharField(verbose_name="储物编号", max_length=32, unique=True, null=False, db_index=True)
+    good_id = models.CharField(verbose_name="储物编号", max_length=32, null=False, db_index=True)
     good_name = models.CharField(verbose_name="储物名称", max_length=64)
     # 分类外键
     classification = models.ForeignKey("Classification", null=True, blank=True, related_name="outWarehouse", on_delete=models.SET_NULL)
@@ -148,7 +148,7 @@ class OutWareHouse(models.Model):
     supplier = models.ForeignKey("Supplier", related_name="outWarehouse", on_delete=models.SET("数据删除"))
     
     def __str__(self):
-        return "{} - {}".format(self.good_id, self.good_name)
+        return "<出库单> {} - {}".format(self.good_id, self.good_name)
 
     def short_remark(self):
         if len(str(self.remark)) > 16:
@@ -167,7 +167,7 @@ class OutWareHouse(models.Model):
 class Sale(models.Model):
     """销售记录"""
     id = models.AutoField(primary_key=True)
-    good_id = models.CharField(verbose_name="商品编号", max_length=32, unique=True, null=False, db_index=True)
+    good_id = models.CharField(verbose_name="商品编号", max_length=32, null=False, db_index=True)
     good_name = models.CharField(verbose_name="商品名称", max_length=64)
     # 分类外键
     classification = models.ForeignKey("Classification", null=True, related_name="sale", on_delete=models.SET_NULL)
@@ -185,7 +185,7 @@ class Sale(models.Model):
     good_from = models.ForeignKey("OutWarehouse", null=True, related_name="sale", on_delete=models.SET_NULL)
 
     def __str__(self):
-        return "{} - {}".format(self.good_id, self.good_name)
+        return "<销售单> {} - {}".format(self.good_id, self.good_name)
 
     def short_remark(self):
         if len(str(self.remark)) > 16:

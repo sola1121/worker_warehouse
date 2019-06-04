@@ -317,7 +317,7 @@
         var goodName = "{% if good_name %}{{good_name}}{% endif %}"
         var className = "{% if class_name %}{{class_name}}{% endif %}"
         var personLiable = "{% if person_liable %}{{person_liable}}{% endif %}"
-        var isFinished = "{% if is_finished %}1{% else %}0{% endif %}"  // TODO: 根据结果可能需要修改
+        var isFinished = "{% if is_finished is True %}1{% elif is_finished is False %}0{% else %}{% endif %}"  // TODO: 根据结果可能需要修改
         var startTime = "{% if start_time %}{{start_time}}{% endif %}"
         var endTime = "{% if end_time %}{{end_time}}{% endif %}"
         if (supplierId || supplierName || goodId || goodName || className || personLiable || isFinished || startTime || endTime){
@@ -359,8 +359,7 @@
                                                                    "&personLiable=" + personLiable + 
                                                                    "&isFinished=" + isFinished +
                                                                    "&startTime=" + startTime +
-                                                                   "&endTime=" + endTime
-                                    )
+                                                                   "&endTime=" + endTime)
             }
         }
     }

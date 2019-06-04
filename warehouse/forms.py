@@ -1,5 +1,4 @@
-from django.forms import ModelForm, TextInput, Textarea, Select, NumberInput
-
+from django.forms import ModelForm, TextInput, Textarea, Select, NumberInput, CheckboxInput
 from . import models
 
 
@@ -34,7 +33,36 @@ class ClassificationForm(ModelForm):
 
 
 class InWarehouseForm(ModelForm):
-    pass
+    class Meta:
+        model = models.InWarehouse
+        fields = ["good_id", "good_name", "classification", "person_liable", "supplier", "spec", "in_amount", "unit", "in_price", "is_finished", "remark"]
+        # 供应商外键
+        labels = {
+            "good_id": "入库货物在库编号",
+            "good_name": "货物名称",
+            "classification": "货物分类",
+            "person_liable": "负责人",
+            "supplier": "供应商",
+            "spec": "规格/型号",
+            "unit": "计件单位",
+            "in_amount": "入库数量",
+            "in_price": "入库货物金额",
+            "is_finished": "是否已入库完毕",
+            "remark": "备注" 
+        }
+        widgets = {
+            "good_id": TextInput(attrs={"id": "backend-goodId", "class": "form-control", "required": True}),
+            "good_name": TextInput(attrs={"id": "backend-goodName", "class": "form-control", "required": True}),
+            "classification": Select(attrs={"id": "backend-classification", "class": "form-control"}),
+            "person_liable": TextInput(attrs={"id": "backend-personLiable", "class": "form-control"}),
+            "supplier": Select(attrs={"id": "backend-supplier", "class": "form-control"}),
+            "spec": TextInput(attrs={"id": "backend-spec", "class": "form-control"}),
+            "unit": TextInput(attrs={"id": "backend-unit", "class": "form-control"}),
+            "in_amount": NumberInput(attrs={"id": "backend-inAmount", "class": "form-control", "step": "1", "min": 0}),
+            "in_price": NumberInput(attrs={"id": "backend-inPrice", "class": "form-control", "step": "0.01", "min": 0}),
+            "is_finished": CheckboxInput(attrs={"id": "backend-isFinished", "class": "form-control", "value": 0}),
+            "remark": Textarea(attrs={"id": "backend-remark", "class": "form-control"}),
+        }
 
 
 class OutWarehouseForm(ModelForm):

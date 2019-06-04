@@ -9,13 +9,13 @@
 <div class="card">
     <div class="card-body">
 
-{# 添加和修改表单, 供应商 #}
-        <div class="container" style="width: 40%;">
+{# 添加和修改表单, 入库单 #}
+        <div class="container" style="max-width: 50rem;">
             <form id="supplierAddForm">
                 {{ form.as_p }}
                 <button id="backend-add-confirm" type="button" class="btn btn-primary">确认保存</button>
                 <button id="backend-add-anothor" type="button" class="btn btn-primary">保存并添加另一个</button>
-                <a class="btn btn-info float-right" href="{% url 'warehouse:supplier_home' %}">返回</a>
+                <a class="btn btn-info float-right" href="{% url 'warehouse:inwarehouse_home' %}">返回</a>
             </form>
         </div>
 
@@ -38,24 +38,32 @@
     function buttonAddConfirm(){
         // 添加一个并返回浏览页
         $("#backend-add-confirm").on("click", function(){
-            asyncPost("{% url 'warehouse:supplier_home' %}")
+            asyncPost("{% url 'warehouse:inwarehouse_home' %}")
         })
     }
 
     function buttonAddAnother(){
         // 添加一个依然保持在当前
         $("#backend-add-anothor").on("click", function(){
-            asyncPost("{% url 'warehouse:supplier_modify' %}")
+            asyncPost("{% url 'warehouse:inwarehouse_modify' %}")
         })
     }
 
     function asyncPost(next_page){
         $.post(
-            "{% url 'warehouse:supplier_modify' %}",
+            "{% url 'warehouse:inwarehouse_modify' %}",
             {
-                "origin_supplier_id": getQueryString("supplierId"), 
-                "supplier_id": $("#backend-supplierId").val(), 
-                "supplier_name": $("#backend-supplierName").val(), 
+                "origin_id": getQueryString("id"), 
+                "good_id": $("#backend-goodId").val(), 
+                "good_name": $("#backend-goodName").val(), 
+                "classification": $("#backend-classification").val(),
+                "person_liable": $("#backend-personLiable").val(),
+                "supplier": $("#backend-supplier").val(),
+                "spec": $("#backend-spec").val(),
+                "unit": $("#backend-unit").val(),
+                "in_amount": $("#backend-inAmount").val(),
+                "in_price": $("#backend-InPrice").val(),
+                "is_finished": $("#backend-isFinished").val(),
                 "remark": $("#backend-remark").val()
             },
             function(reback, status){

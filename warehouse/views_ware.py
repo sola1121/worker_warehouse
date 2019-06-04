@@ -27,6 +27,9 @@ class RequestQueryHandler:
         self.good_name = request.GET.get("goodName", '')
         self.class_name = request.GET.get("className", '')
         self._time_deal(request)
+        # 针对入库单的
+        self.person_liable = request.GET.get("personLiable", '')
+        self.is_finished = request.GET.get("isFinished", '')
     
     def _time_deal(self, request):
         start_time = request.GET.get("startTime", '')
@@ -96,9 +99,11 @@ def warehouse_modify(request):
         form = forms.WarehouseForm(instance=warehouse)
 
     if request.method == "POST":
+        action = History.CREATE
         origin_good_id = request.POST.get("origin_good_id", '')
         if origin_good_id:
             try:
+                action = History.MODIFY
                 change_good_id = request.POST.get("good_id")
                 if origin_good_id != change_good_id:
                     is_exist_warehouse = models.Warehouse.objects.filter(good_id=change_good_id).exists()   # 保证不和数据库中已有唯一冲突
@@ -117,12 +122,10 @@ def warehouse_modify(request):
         if form.is_valid():
             new_warehouse = form.save(commit=False)
             new_warehouse.id = pk_id
-            if int(new_warehouse.amount) < 0:
-                new_warehouse.amount = 0
-            new_warehouse.amount = int(new_warehouse.amount)
+            new_warehouse.amount = int(new_warehouse.amount) if int(new_warehouse.amount)>=0 else 0
             new_warehouse.save()
             # NOTE: 向history中存入记录
-            new_history = History.set_record(cur_user=request.user, model=new_warehouse, act=History.MODIFY)
+            new_history = History.set_record(cur_user=request.user, model=new_warehouse, act=action)
             new_history.save()
             return JsonResponse({"back_msg": OK})
         else:
@@ -192,13 +195,61 @@ def warehouse_download(request):
 
 ### 入库相关 ###
 
+@login_required(login_url='/')
 def in_warehouse(request, page=1):
     return render(request, 
-                  "app_warehouse/in_warehouse.html")
+                  "app_warehouse/in_warehouse.html",
+                  {"active_navbar": "inwarehouse",
+                  })
 
 
+@login_required(login_url='/')
 def in_warehouse_modify(request):
-    pass
+    """入库单添加和修改"""
+    the_id = request.GET.get("id", '')
+    form = forms.InWarehouseForm()
+    if the_id:
+        inwarehouse = get_object_or_404(models.InWarehouse, id=the_id)
+        form = forms.InWarehouseForm(instance=inwarehouse)
+
+    if request.method == "POST":
+        action = History.CREATE
+        origin_id = request.POST.get("origin_id", '')
+        if origin_id:
+            try:
+                action = History.MODIFY
+                origin_inwarehouse = models.InWarehouse.objects.get(id=origin_id)
+                if origin_inwarehouse.is_finished:
+                    raise AssertionError("order have finished, %s" %origin_id)   # 已经完成的订单不能修改
+            except AssertionError:
+                return JsonResponse({"back_msg": "%s 入库单已经存在." %origin_inwarehouse})
+            except Exception:
+                return JsonResponse({"back_msg": "源数据取出失败."})
+        pk_id = origin_inwarehouse.id   # 保留更改对象的pk, 以免关联的表出错
+        origin_inwarehouse.delete()
+        form = forms.WarehouseForm(request.POST)
+        if form.is_valid():
+            new_inwarehouse = form.save(commit=False)
+            new_inwarehouse.id = pk_id
+            new_inwarehouse.in_amount = int(new_inwarehouse.in_amount) if int(new_inwarehouse.in_amount)>=0 else 0
+            new_inwarehouse.save()
+            # NOTE: 向history中存入记录
+            new_history = History.set_record(cur_user=request.user, model=new_inwarehouse, act=action)
+            new_history.save()
+            return JsonResponse({"back_msg": OK})
+        else:
+            origin_inwarehouse.save()   # 恢复原先删除
+            full_msg = str()
+            for value in form.errors.values():
+                for msg in value: 
+                    full_msg += msg + "\n" 
+            return JsonResponse({"back_msg": full_msg})
+
+    return render(request, 
+                  "app_warehouse/in_warehouse_change.html", 
+                  {"head_title": "编辑入库单",
+                   "active_navbar": "inwarehouse",
+                   "form": form})
 
 
 def in_warehouse_delete(request):
