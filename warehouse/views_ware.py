@@ -18,6 +18,21 @@ OK = "OK"
 TZ = pytz.timezone("Asia/Shanghai")
 PER_PAGE = 10
 
+# MARK: 通用方法
+def form_errors(form):
+    """提取form表单中的错误, 将其按照一定格式返回"""
+    from django.forms import ModelForm
+    full_msg = str()
+    if issubclass(form, ModelForm):
+        for key, value in form.errors.items():
+            full_msg += form.SUBJECT_CN.get(str(key), "error") + '\n'
+            for msg in value: 
+                full_msg += "  " * 5 + "⊡ " +  str(msg) + "\n"
+    else:
+        full_msg = "在验证错误的时候, 数据表单出现错误."
+    return full_msg
+
+
 class RequestQueryHandler:
     """处理GET请求参数"""
     def __init__(self, request):
@@ -54,7 +69,7 @@ class RequestQueryHandler:
             return render(request, "exceptions/500.html", status=500)
 
 
-### 在库相关 ###
+### MARK: 在库相关 ###
 
 @login_required(login_url="/")
 def warehouse(request, page=1):
@@ -99,8 +114,8 @@ def warehouse_modify(request):
         form = forms.WarehouseForm(instance=warehouse)
 
     if request.method == "POST":
-        action = History.CREATE
         origin_good_id = request.POST.get("origin_good_id", '')
+        # 只能对现有的库存进行修改, 不能创建, 这里必须要有origin_good_id
         if origin_good_id:
             try:
                 action = History.MODIFY
@@ -118,6 +133,7 @@ def warehouse_modify(request):
             return JsonResponse({"back_msg": "未获取到储物编号."})   # 确保必须要有原始的储物数据
         pk_id = origin_warehouse.id   # 保留更改对象的pk, 以免关联的表出错
         origin_warehouse.delete()
+        # 开始验证并保存表单
         form = forms.WarehouseForm(request.POST)
         if form.is_valid():
             new_warehouse = form.save(commit=False)
@@ -130,10 +146,7 @@ def warehouse_modify(request):
             return JsonResponse({"back_msg": OK})
         else:
             origin_warehouse.save()   # 恢复原先删除
-            full_msg = str()
-            for value in form.errors.values():
-                for msg in value: 
-                    full_msg += msg + "\n" 
+            full_msg = form_errors(form)
             return JsonResponse({"back_msg": full_msg})
 
     return render(request, 
@@ -193,14 +206,50 @@ def warehouse_download(request):
     return response
 
 
-### 入库相关 ###
+### MARK: 入库相关 ###
+
+# 单独使用
+def inwarehouse_check_handler():
+    """处理入库单完成的方法"""
+    pass
+
 
 @login_required(login_url='/')
 def in_warehouse(request, page=1):
+    request_query = RequestQueryHandler(request)
+    supplier_id, supplier_name = request_query.supplier_id, request_query.supplier_name
+    good_id, good_name = request_query.good_id, request_query.good_name
+    class_name = request_query.class_name
+    person_liable = request_query.person_liable
+    is_finished = request_query.is_finished
+    start_time, end_time = request_query.start_time, request_query.end_time
+    inwarehouses = models.InWarehouse.objects.filter(is_deleted=False,
+                                                     supplier__supplier_id__icontains=supplier_id,
+                                                     supplier__supplier_name__icontains=supplier_name,
+                                                     good_id__icontains=good_id,
+                                                     good_name__icontains=good_name,
+                                                     classification__class_name__icontains=class_name,
+                                                     person_liable__icontains=person_liable,
+                                                     is_finished=bool(is_finished),
+                                                     create_date__gte=start_time,
+                                                     create_date__lte=end_time)
+    paginator = Paginator(inwarehouses.order_by("-create_date"), PER_PAGE)
+    if int(page) not in list(paginator.page_range):
+        return redirect("/warehouse/inwarehouse/")   # NOTE: 重定向要注意
+    pagetor = paginator.get_page(page)
     return render(request, 
                   "app_warehouse/in_warehouse.html",
                   {"active_navbar": "inwarehouse",
-                  })
+                   "pagetor": pagetor,
+                   "supplier_id": supplier_id,
+                   "supplier_name": supplier_name,
+                   "good_id": good_id,
+                   "good_name": good_name,
+                   "class_name": class_name,
+                   "person_liable": person_liable,
+                   "is_finished": is_finished,
+                   "start_time": request_query.origin_start_time,
+                   "end_time": request_query.origin_end_time})
 
 
 @login_required(login_url='/')
@@ -213,36 +262,37 @@ def in_warehouse_modify(request):
         form = forms.InWarehouseForm(instance=inwarehouse)
 
     if request.method == "POST":
-        action = History.CREATE
+        pk_id = None
+        origin_inwarehouse = None
         origin_id = request.POST.get("origin_id", '')
+        # 如果有origin_id, 那么是修改
         if origin_id:
             try:
-                action = History.MODIFY
                 origin_inwarehouse = models.InWarehouse.objects.get(id=origin_id)
                 if origin_inwarehouse.is_finished:
                     raise AssertionError("order have finished, %s" %origin_id)   # 已经完成的订单不能修改
+                pk_id = origin_inwarehouse.id   # 保留更改对象的pk, 以免关联的表出错
+                origin_inwarehouse.delete()
             except AssertionError:
-                return JsonResponse({"back_msg": "%s 入库单已经存在." %origin_inwarehouse})
+                return JsonResponse({"back_msg": "%s 入库单已完成, 不能更改." %origin_inwarehouse})
             except Exception:
                 return JsonResponse({"back_msg": "源数据取出失败."})
-        pk_id = origin_inwarehouse.id   # 保留更改对象的pk, 以免关联的表出错
-        origin_inwarehouse.delete()
-        form = forms.WarehouseForm(request.POST)
+        # 开始接受表单数据, 并验证, 保存
+        form = forms.InWarehouseForm(request.POST)
         if form.is_valid():
             new_inwarehouse = form.save(commit=False)
-            new_inwarehouse.id = pk_id
+            if pk_id:
+                new_inwarehouse.id = pk_id
             new_inwarehouse.in_amount = int(new_inwarehouse.in_amount) if int(new_inwarehouse.in_amount)>=0 else 0
             new_inwarehouse.save()
             # NOTE: 向history中存入记录
-            new_history = History.set_record(cur_user=request.user, model=new_inwarehouse, act=action)
+            new_history = History.set_record(cur_user=request.user, model=new_inwarehouse, act=History.MODIFY)
             new_history.save()
             return JsonResponse({"back_msg": OK})
         else:
-            origin_inwarehouse.save()   # 恢复原先删除
-            full_msg = str()
-            for value in form.errors.values():
-                for msg in value: 
-                    full_msg += msg + "\n" 
+            if origin_inwarehouse:
+                origin_inwarehouse.save()   # 恢复原先删除
+            full_msg = form_errors(form)
             return JsonResponse({"back_msg": full_msg})
 
     return render(request, 

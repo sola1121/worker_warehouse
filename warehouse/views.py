@@ -18,6 +18,22 @@ OK = "OK"
 TZ = pytz.timezone("Asia/Shanghai")
 PER_PAGE = 10
 
+
+# 通用方法
+def form_errors(form):
+    """提取form表单中的错误, 将其按照一定格式返回"""
+    from django.forms import ModelForm
+    full_msg = str()
+    if issubclass(form, ModelForm):
+        for key, value in form.errors.items():
+            full_msg += form.SUBJECT_CN.get(str(key), "error") + '\n'
+            for msg in value: 
+                full_msg += "  " * 5 + "⊡ " +  str(msg) + "\n"
+    else:
+        full_msg = "在验证错误的时候, 数据表单出现错误."
+    return full_msg
+
+
 ### 供应商相关 ###
 
 @login_required(login_url="/")
@@ -50,8 +66,11 @@ def supplier_modify(request):
         form = forms.SupplierForm(instance=supplier)
 
     if request.method == "POST":
+        pk_id = None
+        origin_supplier = None
         action = History.CREATE   # 记录操作动作, 初始默认是创建
         origin_supplier_id = request.POST.get("origin_supplier_id", '')
+        # 如果有origin_supplier_id, 那么是修改操作
         if origin_supplier_id:
             try:
                 action = History.MODIFY
@@ -61,27 +80,27 @@ def supplier_modify(request):
                     if is_exsit_supplier:
                         raise AssertionError("supplier objects with %s has already existed." % change_supplier_id)
                 origin_supplier = models.Supplier.objects.get(supplier_id=origin_supplier_id)
+                pk_id = origin_supplier.id   # 保留对象的pk, 以免关联的表出错
+                origin_supplier.delete()
             except AssertionError:
                 return JsonResponse({"back_msg": "%s 供应商编号已存在."%change_supplier_id})
             except:
                 return JsonResponse({"back_msg": "源数据取出失败."})
-        pk_id = origin_supplier.id   # 保留对象的pk, 以免关联的表出错
-        origin_supplier.delete()
+        # 传递表单数据, 并开始验证保存
         form = forms.SupplierForm(request.POST)
         if form.is_valid():
             new_supplier = form.save(commit=False)
-            new_supplier.id = pk_id
+            if pk_id:
+                new_supplier.id = pk_id
             new_supplier.save()
             # NOTE:　向history中存入记录
             new_history = History.set_record(cur_user=request.user, model=new_supplier, act=action)
             new_history.save()
             return JsonResponse({"back_msg": OK})
         else:
-            origin_supplier.save()   # 恢复原始数据的删除
-            full_msg = str()
-            for value in form.errors.values():
-                for msg in value: 
-                    full_msg += msg + "\n" 
+            if origin_supplier:
+                origin_supplier.save()   # 恢复原始数据的删除
+            full_msg = form_errors(form)
             return JsonResponse({"back_msg": full_msg})
 
     return render(request, 
@@ -158,8 +177,11 @@ def classification_modify(request):
         form = forms.ClassificationForm(instance=classification)
 
     if request.method == "POST":
+        pk_id = None
+        origin_classification = None
         action = History.CREATE   # 记录操作动作, 初始默认是创建
         origin_class_name = request.POST.get("origin_class_name", '')
+        # 如果有origin_class_name, 那么是修改操作
         if origin_class_name:
             try:
                 action = History.MODIFY
@@ -169,27 +191,27 @@ def classification_modify(request):
                     if is_exist_classification:
                         raise AssertionError("classification objects with %s has aready existed." % change_class_name)
                 origin_classification = models.Classification.objects.get(class_name=origin_class_name)
+                pk_id = origin_classification.id   # 保留对象的pk, 以免关联的表出错
+                origin_classification.delete()
             except AssertionError:
                 return JsonResponse({"back_msg": "%s 种类名已存在."%change_class_name})
             except:
                 return JsonResponse({"back_msg": "源数据取出失败."})
-        pk_id = origin_classification.id   # 保留对象的pk, 以免关联的表出错
-        origin_classification.delete()
+        # 传递表单数据, 并开始验证保存
         form = forms.ClassificationForm(request.POST)
         if form.is_valid():
             new_classification = form.save(commit=False)
-            new_classification.id = pk_id
+            if pk_id:
+                new_classification.id = pk_id
             new_classification.save()
             # NOTE: 向history中存入记录
             new_history = History.set_record(cur_user=request.user, model=new_classification, act=action)
             new_history.save()
             return JsonResponse({"back_msg": OK})
         else:
-            origin_classification.save()   # 恢复原始数据删除
-            full_msg = str()
-            for value in form.errors.values():
-                for msg in value: 
-                    full_msg += msg + "\n" 
+            if origin_classification:
+                origin_classification.save()   # 恢复原始数据删除
+            full_msg = form_errors(form)
             return JsonResponse({"back_msg": full_msg})
 
     return render(request, 

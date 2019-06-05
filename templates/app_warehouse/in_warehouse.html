@@ -39,7 +39,7 @@
                         <th>入库数量</th>
                         <th>入库金额</th>
                         <th>订单时间</th>
-                        <th>是否完成</th>
+                        <th>是否入库</th>
                         <th>备注</th>
                         <th>操作</th>
                     </tr>
@@ -57,10 +57,10 @@
                         <th>{{contact.supplier.supplier_name}}</th>
                         <th>{{contact.spec}}</th>
                         <th>{{contact.unit}}</th>
-                        <th>{{contact.amount}}</th>
-                        <th>{{contact.price}}</th>
-                        <th>{{contact.update_date}}</th>
-                        <th><i class="fa {% if contact.is_finished %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i></th>
+                        <th>{{contact.in_amount}}</th>
+                        <th>{{contact.in_price}}</th>
+                        <th>{{contact.create_date}}</th>
+                        <th class="text-center"><i class="fa {% if contact.is_finished %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i></th>
                         <th class="backend-remark">
                             {% if contact.remark %}
                             <a href="#" onclick="remarkModal(this)" data-toggle="popover" modal-title="{{contact.person_liable}} - {{contact.good_id}}" title="{{contact.remark}}"></a>
@@ -69,7 +69,7 @@
                         <th>
                             {# 入库单, 出库单, 销售单将会直接使用数据库主键 #}
                             <button type="button" class="btn btn-success btn-sm backend-check" data-toggle="tooltip" data-placement="bottom" value_id="{{contact.id}}" title="完成入库" {% if contact.is_finished %}disabled{% endif %}><i class="fa fa-check"></i></button>
-                            <button type="button" class="btn btn-warning btn-sm backend-edit" data-toggle="tooltip" data-placement="bottom" value_id="{{contact.id}}" title="编辑内容"><i class="fa fa-edit"></i></button>
+                            <button type="button" class="btn btn-warning btn-sm backend-edit" data-toggle="tooltip" data-placement="bottom" value_id="{{contact.id}}" title="编辑内容" {% if contact.is_finished %}disabled{% endif %}><i class="fa fa-edit"></i></button>
                             <button type="button" class="btn btn-danger btn-sm backend-delete" data-toggle="tooltip" data-placement="bottom" value_id="{{contact.id}}" title="删除内容"><i class="fa fa-trash"></i></button>
                         </th>
                     </tr>
@@ -135,6 +135,55 @@
         initPagination: function(){paginationLink()},
     }
 
+    function queryRequest(flag, metod="from_form"){
+        // 拼接请求参数
+        switch(String(metod).toUpperCase()){
+            // 直接从url中获取值
+            case "FROM_URL":
+                var supplierId = getQueryString("supplierId")
+                var supplierName = getQueryString("supplierName")
+                var goodId = getQueryString("goodId")
+                var goodName = getQueryString("goodName")
+                var className = getQueryString("className")
+                var personLiable = getQueryString("personLiable")
+                var isFinished = getQueryString("isFinished")
+                var startTime = getQueryString("startTime")
+                var endTime = getQueryString("endTime")
+                break
+            // 从查询表单中获取值
+            case "FROM_FORM":
+                var supplierId = $("#searchInWarehouseSupplierId").val()
+                var supplierName = $("#searchInWarehouseSupplierName").val()
+                var goodId = $("#searchInWarehouseGoodId").val()
+                var goodName = $("#searchInWarehouseGoodNme").val()
+                var className = $("#searchInWarehouseClassName").val()
+                var personLiable = $("#searchInWarehousePersonLiable").val()
+                var isFinished = $("#searchInWarehouseIsFinished").val()
+                var startTime = $("#searchInWarehouseStartTime").val()
+                var endTime = $("#searchInWarehouseEndTime").val()
+                break
+        }
+
+        switch(String(flag).toUpperCase()){
+            case "QUERY_ARRAY":        //  0            1           2        3        4            5             6            7        8
+                var values = new Array(supplierId, supplierName, goodId, goodName, className, personLiable, isFinished, startTime, endTime)
+                return values
+                break
+            case "QUERY_STRING":
+                var querySet = "?supplierId=" + supplierId + 
+                               "&supplierName=" + supplierName +
+                               "&goodId=" + goodId + 
+                               "&goodName=" + goodName + 
+                               "&className=" + className +
+                               "&personLiable=" + personLiable +
+                               "&isFinished=" + isFinished +
+                               "&startTime=" + startTime +
+                               "&endTime=" + endTime
+                return querySet
+                break
+        }
+    }
+
 
     function inputTime(){
         // 搜索框日期显示初始化
@@ -156,24 +205,7 @@
     function buttonSearch(){
         // 搜索按钮功能赋予
         $("#inWarehouseSearch").on("click", function (evt) {
-            var supplierId = $("#searchInWarehouseSupplierId").val()
-            var supplierName = $("#searchInWarehouseSupplierName").val()
-            var goodId = $("#searchInWarehouseGoodId").val()
-            var goodName = $("#searchInWarehouseGoodNme").val()
-            var className = $("#searchInWarehouseClassName").val()
-            var personLiable = $("#searchInWarehousePersonLiable").val()
-            var isFinished = $("#searchInWarehouseIsFinished").val()
-            var startTime = $("#searchInWarehouseStartTime").val()
-            var endTime = $("#searchInWarehouseEndTime").val()
-            window.location.href = "{% url 'warehouse:inwarehouse_home' %}1/?supplierId=" + supplierId + 
-                                                                           "&supplierName=" + supplierName +
-                                                                           "&goodId=" + goodId + 
-                                                                           "&goodName=" + goodName + 
-                                                                           "&className=" + className +
-                                                                           "&personLiable=" + personLiable +
-                                                                           "&isFinished=" + isFinished +
-                                                                           "&startTime=" + startTime +
-                                                                           "&endTime=" + endTime
+            window.location.href = "{% url 'warehouse:inwarehouse_home' %}1/" + queryRequest("QUERY_STRING")
         })
     }
     
@@ -181,29 +213,19 @@
     function buttonDownload(){
         // 文件下载功能
         $("#backend-download").on("click", function(evt){
-            var supplierId = $("#searchInWarehouseSupplierId").val()
-            var supplierName = $("#searchInWarehouseSupplierName").val()
-            var goodId = $("#searchInWarehouseGoodId").val()
-            var goodName = $("#searchInWarehouseGoodNme").val()
-            var className = $("#searchInWarehouseClassName").val()
-            var personLiable = $("#searchInWarehousePersonLiable").val()
-            var isFinished = $("#searchInWarehouseIsFinished").val()
-            var startTime = $("#searchInWarehouseStartTime").val()
-            var endTime = $("#searchInWarehouseEndTime").val()
-            var download_url = "{% url 'warehouse:inwarehouse_download' %}?supplierId=" + supplierId + 
-                                                                         "&supplierName=" + supplierName +
-                                                                         "&goodId=" + goodId + 
-                                                                         "&goodName=" + goodName + 
-                                                                         "&className=" + className +
-                                                                         "&personLiable=" + personLiable +
-                                                                         "&isFinished=" + isFinished +
-                                                                         "&startTime=" + startTime +
-                                                                         "&endTime=" + endTime
-            var filename = (supplierId || supplierName || goodId || goodName || className || personLiable || isFinished || startTime || endTime)
-                            ? "入库单 - 货物编号_" + goodId + ", 货物名称_" + goodName + ", 分类_" + className + 
-                              ", 供应商编号_" + supplierId + ", 供应商名称_" + supplierName + ", 责任人_" + personLiable + ", 是否完成_" + isFinished +
-                              "时间区间(" + startTime + ", " + endTime + ").xlsx" 
-                            : "入库单.xlsx"
+            var values = queryRequest("QUERY_ARRAY")
+            var download_url = "{% url 'warehouse:inwarehouse_download' %}" + queryRequest("QUERY_STRING", "FROM_URL")
+            var filename = new String()
+            for (var v in values){
+                if (v) {
+                    filename = "入库单 - 货物编号_" + values[2] + ", 货物名称_" + values[3] + ", 分类_" + values[4] + 
+                               ", 供应商编号_" + values[0] + ", 供应商名称_" + values[1] + ", 责任人_" + values[5] + 
+                               ", 是否完成_" + values[6] + "时间区间(" + values[7] + ", " + values[8] + ").xlsx"
+                    break
+                } else {
+                    filename = "入库单.xlsx"
+                }
+            }
             // 模拟下载, 仅htm5支持
             var aElement = document.createElement('a')
             aElement.setAttribute('href', download_url)
@@ -317,7 +339,7 @@
         var goodName = "{% if good_name %}{{good_name}}{% endif %}"
         var className = "{% if class_name %}{{class_name}}{% endif %}"
         var personLiable = "{% if person_liable %}{{person_liable}}{% endif %}"
-        var isFinished = "{% if is_finished is True %}1{% elif is_finished is False %}0{% else %}{% endif %}"  // TODO: 根据结果可能需要修改
+        var isFinished = "{% if is_finished is True %}1{% elif is_finished is False %}0{% else %}{% endif %}"
         var startTime = "{% if start_time %}{{start_time}}{% endif %}"
         var endTime = "{% if end_time %}{{end_time}}{% endif %}"
         if (supplierId || supplierName || goodId || goodName || className || personLiable || isFinished || startTime || endTime){

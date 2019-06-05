@@ -111,7 +111,7 @@ class InWarehouse(models.Model):
     supplier = models.ForeignKey("Supplier", related_name="inWarehouse", on_delete=models.SET("数据删除"))
 
     def __str__(self):
-        return "<入库单> {} - {}".format(self.good_id, self.good_name)
+        return "<入库单_{}> {} - {}".format(self.id, self.good_id, self.good_name)
 
     def short_remark(self):
         if len(str(self.remark)) > 16:
@@ -148,7 +148,7 @@ class OutWareHouse(models.Model):
     supplier = models.ForeignKey("Supplier", related_name="outWarehouse", on_delete=models.SET("数据删除"))
     
     def __str__(self):
-        return "<出库单> {} - {}".format(self.good_id, self.good_name)
+        return "<出库单_{}> {} - {}".format(self.id, self.good_id, self.good_name)
 
     def short_remark(self):
         if len(str(self.remark)) > 16:
@@ -185,7 +185,7 @@ class Sale(models.Model):
     good_from = models.ForeignKey("OutWarehouse", null=True, related_name="sale", on_delete=models.SET_NULL)
 
     def __str__(self):
-        return "<销售单> {} - {}".format(self.good_id, self.good_name)
+        return "<销售单_{}> {} - {}".format(self.id, self.good_id, self.good_name)
 
     def short_remark(self):
         if len(str(self.remark)) > 16:
