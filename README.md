@@ -1,6 +1,8 @@
 # worker_warehouse
 
-个人项目, 一个仓库管理项目.
+写着练手的一个仓库管理项目.
+
+使用Django框架, 使用Mark Stephen同志提供的Bootstrap Dashboard. 感谢. Thank Mark Stephen.
 
 ## 目录结构
 
